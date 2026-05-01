@@ -20,7 +20,10 @@ def process_stock(symbol):
     # Basic info
     info = ticker.info
     company_name = info.get("longName", "Unknown")
-
+    # Additional scoring metrics
+    roe = info.get("returnOnEquity")
+    eps = info.get("trailingEps")
+    market_cap = info.get("marketCap")
     # Financial statements
     income = ticker.financials
     bs = ticker.balance_sheet
@@ -63,12 +66,12 @@ def process_stock(symbol):
             financial_dict[y]["EquityRatio"] = equity / assets if equity and assets else None
 
             # Operating Cash Flow
-            if "Total Cash From Operating Activities" in cf.index:
-                financial_dict[y]["OperatingCF"] = cf.loc["Total Cash From Operating Activities"].get(year)
+            if "Operating Cash Flow" in cf.index:
+                financial_dict[y]["OperatingCF"] = cf.loc["Operating Cash Flow"].get(year)
 
             # Cash
-            if "Cash" in bs.index:
-                financial_dict[y]["Cash"] = bs.loc["Cash"].get(year)
+            if "Cash And Cash Equivalents" in bs.index:
+                financial_dict[y]["Cash"] = bs.loc["Cash And Cash Equivalents"].get(year)
 
     # -----------------------------
     # Dividend Data (past 10 years + current year)
@@ -95,6 +98,10 @@ def process_stock(symbol):
             "Cash": fin.get("Cash"),
             "Dividend": total_div,
             "Count": count,
+            # ★ 追加項目（スコア計算用）
+            "ROE": roe,
+            "EPS": eps,
+            "MarketCap": market_cap,
         }
 
         output_rows.append(row)
