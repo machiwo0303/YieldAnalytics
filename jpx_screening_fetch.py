@@ -6,10 +6,31 @@ import sys
 # Helper: find correct row name
 # -----------------------------
 def find_row(df, candidates):
+    if df is None or df.empty:
+        return None
     for c in candidates:
         if c in df.index:
             return df.loc[c]
     return None
+
+# -----------------------------
+# Safe dividend fetch
+# -----------------------------
+def safe_get_dividends(ticker, symbol):
+    try:
+        div = ticker.get_dividends()
+    except Exception as e:
+        print(f"[WARN] Failed to fetch dividends for {symbol}: {e}")
+        return pd.Series(dtype=float)
+
+    # tz-aware → tz-naive
+    if not div.empty:
+        idx = pd.DatetimeIndex(div.index)
+        if idx.tz is not None:
+            idx = idx.tz_convert(None)
+        div.index = idx
+
+    return div
 
 # -----------------------------
 # Main processing function
@@ -20,15 +41,28 @@ def process_stock(symbol):
     # Basic info
     info = ticker.info
     company_name = info.get("longName", "Unknown")
-    # Additional scoring metrics
     roe = info.get("returnOnEquity")
     eps = info.get("trailingEps")
     market_cap = info.get("marketCap")
+
     # Financial statements
-    income = ticker.financials
-    bs = ticker.balance_sheet
-    cf = ticker.cashflow
-    div = ticker.dividends
+    try:
+        income = ticker.financials
+    except:
+        income = pd.DataFrame()
+
+    try:
+        bs = ticker.balance_sheet
+    except:
+        bs = pd.DataFrame()
+
+    try:
+        cf = ticker.cashflow
+    except:
+        cf = pd.DataFrame()
+
+    # Dividends (safe)
+    div = safe_get_dividends(ticker, symbol)
 
     # Equity / Assets row detection
     equity_candidates = [
@@ -46,7 +80,7 @@ def process_stock(symbol):
     # -----------------------------
     # Financial Data (up to 4 years)
     # -----------------------------
-    financial_dict = {}  # key = year
+    financial_dict = {}
 
     if income is not None and not income.empty:
         years = income.columns
@@ -63,7 +97,7 @@ def process_stock(symbol):
             # Equity Ratio
             equity = equity_row.get(year) if equity_row is not None else None
             assets = assets_row.get(year) if assets_row is not None else None
-            financial_dict[y]["EquityRatio"] = equity / assets if equity and assets else None
+            financial_dict[y]["EquityRatio"] = (equity / assets) if (equity and assets) else None
 
             # Operating Cash Flow
             if "Operating Cash Flow" in cf.index:
@@ -74,7 +108,7 @@ def process_stock(symbol):
                 financial_dict[y]["Cash"] = bs.loc["Cash And Cash Equivalents"].get(year)
 
     # -----------------------------
-    # Dividend Data (past 10 years + current year)
+    # Dividend Data (past 10 years)
     # -----------------------------
     current_year = pd.Timestamp.today().year
     years_for_output = list(range(current_year - 10, current_year + 1))
@@ -82,10 +116,9 @@ def process_stock(symbol):
     output_rows = []
 
     for y in years_for_output:
-        total_div = div[div.index.year == y].sum()
-        count = len(div[div.index.year == y])
+        total_div = div[div.index.year == y].sum() if not div.empty else 0
+        count = len(div[div.index.year == y]) if not div.empty else 0
 
-        # Merge financial + dividend
         fin = financial_dict.get(y, {})
 
         row = {
@@ -98,7 +131,6 @@ def process_stock(symbol):
             "Cash": fin.get("Cash"),
             "Dividend": total_div,
             "Count": count,
-            # ★ 追加項目（スコア計算用）
             "ROE": roe,
             "EPS": eps,
             "MarketCap": market_cap,
@@ -106,10 +138,7 @@ def process_stock(symbol):
 
         output_rows.append(row)
 
-    # Print to console
-    print("\n==============================================")
-    print(f"Symbol: {symbol}   Company: {company_name}")
-    print("==============================================")
+    print(f"\n=== {symbol} {company_name} ===")
     print(pd.DataFrame(output_rows).to_string(index=False))
 
     return output_rows
@@ -124,18 +153,15 @@ if __name__ == "__main__":
         sys.exit(1)
 
     csv_file = sys.argv[1]
-
-    # Read CSV (1 column, stock codes)
     df_codes = pd.read_csv(csv_file, header=None, names=["code"])
 
     all_rows = []
 
     for code in df_codes["code"]:
-        symbol = f"{code}.T"  # Japanese stock
+        symbol = f"{code}.T"
         rows = process_stock(symbol)
         all_rows.extend(rows)
 
-    # Save to CSV
     df_output = pd.DataFrame(all_rows)
     df_output.to_csv("output_financial_dividend_merged.csv", index=False, encoding="utf-8-sig")
 

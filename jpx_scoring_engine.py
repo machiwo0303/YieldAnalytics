@@ -104,6 +104,8 @@ df = pd.read_csv("output_financial_dividend_merged.csv")
 results = []
 
 for symbol, group in df.groupby("Symbol"):
+    group_sorted = group.sort_values("Year")
+    latest = group_sorted.iloc[-1]
     dividend_score = calc_dividend_score(group)
     financial_score = calc_financial_score(group)
     profit_score = calc_profit_score(group)
@@ -116,7 +118,8 @@ for symbol, group in df.groupby("Symbol"):
         "DividendScore": dividend_score,
         "FinancialScore": financial_score,
         "ProfitScore": profit_score,
-        "TotalScore": total
+        "TotalScore": total,
+        "MarketCap": latest["MarketCap"] 
     })
 
 df_score = pd.DataFrame(results)
