@@ -54,16 +54,24 @@ def calc_financial_score(group):
             score += 5
 
     # Operating CF（過去4年）
-    cf = group.sort_values("Year")["OperatingCF"].tail(4)
+    cf = (
+        group.sort_values("Year")["OperatingCF"]
+        .dropna()        # 欠損を除外
+        .tail(4)         # 最新4年を取得
+        .tolist()
+    )
     if all((x is not None) and (x > 0) for x in cf):
-        score += 10
+        score += 8
+    # ★ 4年合計がプラスなら +4 点
+    if sum(cf) > 0:
+        score += 4
 
     # Cash / MarketCap
     cash = latest["Cash"]
     mc = latest["MarketCap"]
     if pd.notna(cash) and pd.notna(mc) and mc > 0:
         if cash / mc >= 0.10:
-            score += 10
+            score += 8
 
     return score
 

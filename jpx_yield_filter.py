@@ -32,17 +32,50 @@ def get_dividend_yield(symbol):
 
 
 # ============================
-# 直近2年の利回り統計（平均・最高）
+# 株式分割情報（倍率＋フラグ）
+# ============================
+def get_split_info(symbol):
+    ticker = yf.Ticker(symbol)
+    try:
+        actions = ticker.actions
+
+        if "Stock Splits" not in actions.columns:
+            return ""
+
+        splits = actions["Stock Splits"]
+        splits = splits[splits > 0]
+
+        if splits.empty:
+            return ""
+
+        # ★ 過去1年以内の分割だけを見る
+        one_year_ago = pd.Timestamp.utcnow() - pd.Timedelta(days=365)
+        one_year_ago = one_year_ago.tz_localize(None)
+
+        recent_splits = splits[splits.index >= one_year_ago]
+
+        if recent_splits.empty:
+            return ""
+
+        return "Split"
+
+    except:
+        return ""
+
+
+
+
+# ============================
+# 直近2年の利回り統計（平均・最高）＋分割補正
 # ============================
 def get_dividend_yield_2years_stats(symbol):
     ticker = yf.Ticker(symbol)
 
-    # 株価2年分
-    hist = ticker.history(period="2y")
+    # 調整後株価（分割・配当調整済み）
+    hist = ticker.history(period="2y", auto_adjust=True)
     if hist.empty:
         return None, None
 
-    # 配当データ
     try:
         div = ticker.get_dividends()
     except:
@@ -51,13 +84,11 @@ def get_dividend_yield_2years_stats(symbol):
     if div.empty:
         return None, None
 
-    # tz-naive
     idx = pd.DatetimeIndex(div.index)
     if idx.tz is not None:
         idx = idx.tz_convert(None)
     div.index = idx
 
-    # 対象年（直近2年）
     years = sorted(list(set(div.index.year)))[-2:]
 
     yields = []
@@ -105,29 +136,108 @@ def get_size_category(market_cap):
 
 
 # ============================
-# GICS → 東証33業種マッピング
+# industry → 東証33業種
 # ============================
-sector_map_33 = {
-    "Technology": "情報・通信業",
-    "Communication Services": "情報・通信業",
-    "Industrials": "機械 / 電気機器 / 輸送用機器 / 建設業 / その他製品",
-    "Consumer Cyclical": "小売業 / 卸売業 / 輸送用機器",
-    "Consumer Defensive": "食料品",
-    "Healthcare": "医薬品",
-    "Energy": "石油・石炭製品",
-    "Utilities": "電気・ガス業",
-    "Real Estate": "不動産業",
-    "Financial Services": "銀行業 / 証券 / 保険 / その他金融業",
-    "Basic Materials": "化学 / 鉄鋼 / 非鉄金属 / ガラス・土石製品 / ゴム製品 / パルプ・紙"
+def normalize_industry_name(industry: str) -> str:
+    s = industry.strip()
+    s = s.replace("—", "-").replace("–", "-")
+    while "  " in s:
+        s = s.replace("  ", " ")
+    return s
+
+
+industry_map_jp = {
+    "Electronic Components": "電気機器",
+    "Semiconductors": "電気機器",
+    "Computer Hardware": "電気機器",
+    "Consumer Electronics": "電気機器",
+    "Furnishings, Fixtures & Appliances": "その他製品",
+
+    "Auto Manufacturers": "輸送用機器",
+    "Auto Parts": "輸送用機器",
+
+    "Machinery": "機械",
+    "Industrial Machinery": "機械",
+    "Specialty Industrial Machinery": "機械",
+
+    "Steel": "鉄鋼",
+    "Aluminum": "非鉄金属",
+    "Building Materials": "ガラス・土石製品",
+    "Chemicals": "化学",
+    "Specialty Chemicals": "化学",
+    "Rubber & Plastics": "ゴム製品",
+    "Textile Manufacturing": "繊維製品",
+    "Packaging & Containers": "パルプ・紙",
+
+    "Oil & Gas": "石油・石炭製品",
+    "Oil & Gas Refining": "石油・石炭製品",
+    "Coal": "鉱業",
+
+    "Utilities - Regulated Electric": "電気・ガス業",
+    "Utilities - Regulated Gas": "電気・ガス業",
+
+    "Construction": "建設業",
+    "Engineering & Construction": "建設業",
+    "Residential Construction": "建設業",
+    "Real Estate - Development": "不動産業",
+    "Real Estate - Diversified": "不動産業",
+    "Real Estate Services": "不動産業",
+
+    "Banks - Regional": "銀行業",
+    "Banks - Diversified": "銀行業",
+    "Insurance - Life": "保険業",
+    "Insurance - Property & Casualty": "保険業",
+    "Capital Markets": "証券、商品先物取引業",
+    "Financial Conglomerates": "その他金融業",
+    "Credit Services": "その他金融業",
+    "Asset Management": "その他金融業",
+
+    "Marine Shipping": "海運業",
+    "Trucking": "陸運業",
+    "Airlines": "空運業",
+    "Integrated Freight & Logistics": "倉庫・運輸関連業",
+
+    "Retail": "小売業",
+    "Department Stores": "小売業",
+    "Grocery Stores": "小売業",
+    "Wholesale": "卸売業",
+
+    "Food Products": "食料品",
+    "Beverages - Non-Alcoholic": "食料品",
+    "Household Products": "その他製品",
+
+    "Biotechnology": "医薬品",
+    "Drug Manufacturers": "医薬品",
+    "Drug Manufacturers - General": "医薬品",
+    "Medical Devices": "精密機器",
+
+    "Telecom Services": "情報・通信業",
+    "Software - Application": "情報・通信業",
+    "Software - Infrastructure": "情報・通信業",
+    "IT Services": "情報・通信業",
+    "Information Technology Services": "情報・通信業",
+    "Internet Content & Information": "情報・通信業",
+    "Electronic Gaming & Multimedia": "情報・通信業",
+
+    "Leisure": "サービス業",
+    "Restaurants": "サービス業",
+    "Professional Services": "サービス業",
+    "Specialty Business Services": "サービス業",
+    "Staffing & Employment Services": "サービス業",
+    "Scientific & Technical Instruments": "精密機器",
 }
+
 
 def get_sector_jp(symbol):
     ticker = yf.Ticker(symbol)
     info = ticker.info
-    sector = info.get("sector", None)
-    if sector is None:
+
+    industry = info.get("industry", None)
+    if industry is None:
         return "Unknown"
-    return sector_map_33.get(sector, sector)
+
+    norm = normalize_industry_name(industry)
+    return industry_map_jp.get(norm, norm)
 
 
 # ============================
@@ -150,6 +260,57 @@ def meets_yield_threshold(size_category, dy):
 
 
 # ============================
+# 買い時判定（◎〇△×）
+# ============================
+def get_buy_signal(size_category, dy, avg2y, max2y, total_score):
+    if dy is None:
+        return "×"
+
+    is_micro = (size_category == "超小型")
+
+    # ×：平均利回り以下
+    if avg2y is not None and dy < avg2y:
+        return "×"
+
+    # ×：利回りが低すぎる
+    if dy < 0.02:
+        return "×"
+
+    # ◎：超大型で6%以上
+    if size_category == "超大型" and dy >= 0.06:
+        return "◎"
+
+    # 〇：中型以上で7%以上
+    if size_category in ["中型", "大型", "超大型"] and dy >= 0.07:
+        if not is_micro:
+            return "〇"
+
+    # 〇：小型で9%以上
+    if size_category == "小型" and dy >= 0.09:
+        return "〇"
+
+    # 〇：平均利回りの1.3倍以上
+    if avg2y is not None and dy >= avg2y * 1.3:
+        if not is_micro:
+            return "〇"
+
+    # 〇：過去最高利回りの90%以上（割安）
+    if max2y is not None and dy >= max2y * 0.9:
+        if not is_micro:
+            return "〇"
+
+    # △：超小型は常に最大△
+    if is_micro:
+        return "△"
+
+    # △：平均以上なら監視候補
+    if avg2y is None or dy >= avg2y:
+        return "△"
+
+    return "×"
+
+
+# ============================
 # メイン処理
 # ============================
 def main():
@@ -169,10 +330,15 @@ def main():
         size_category = get_size_category(market_cap)
         sector_jp = get_sector_jp(symbol)
 
+        # ★ 分割フラグ（補正は2年利回り関数内で実施済み）
+        split_flag = get_split_info(symbol)
+
         # ★ TotalScore 80以上は無条件採用
         if row["TotalScore"] < 80:
             if not meets_yield_threshold(size_category, dy):
                 continue
+
+        buy_signal = get_buy_signal(size_category, dy, avg2y, max2y, row["TotalScore"])
 
         results.append({
             "Symbol": symbol,
@@ -183,7 +349,9 @@ def main():
             "MaxYield2Y": max2y,
             "MarketCap": market_cap,
             "SizeCategory": size_category,
-            "SectorJP": sector_jp
+            "SectorJP": sector_jp,
+            "SplitFlag": split_flag,
+            "BuySignal": buy_signal
         })
 
     df_result = pd.DataFrame(results)
