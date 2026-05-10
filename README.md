@@ -1,189 +1,172 @@
-# YieldAnalytics  
-日本株を対象にした「高配当 × 財務健全性 × 増配 × 割安度 × 企業規模 × セクター分析」に基づく  
-**日本版 SCHD スタイルの銘柄スクリーニングツール** です。
-
-本プロジェクトは以下の 3 ステップで構成されています：
-
-1. **jpx_screening_fetch.py**  
-   └ 財務データ・配当データを Yahoo Finance から取得し、銘柄ごとの年度別データを生成  
-2. **jpx_scoring_engine.py**  
-   └ 財務・収益性・配当履歴からスコアリングし、総合スコアを算出  
-3. **jpx_yield_filter.py**  
-   └ スコア上位銘柄に対して利回り・規模・セクター・割安度で最終フィルタリング
-
-最終的に **yield_filtered_output.csv** として投資候補銘柄を出力します。
+# 📘 YieldAnalytics — 日本株 高配当スクリーニング & スコアリングシステム
+**JPX 上場銘柄を対象に、配当・財務・成長・規模・CF を総合評価し、“買うべき銘柄” を自動抽出する分析ツール**
 
 ---
 
-# 📌 1. jpx_screening_fetch.py  
-**目的：銘柄ごとの財務データ・配当データを取得し、年度別に整理した CSV を生成**
+## 🚀 概要
+YieldAnalytics は、**日本株の高配当銘柄を定量的にスクリーニングするための Python ツール群**です。
 
-### 🔍 取得するデータ
-- 企業名（longName）
-- ROE（returnOnEquity）
-- EPS（trailingEps）
-- 時価総額（marketCap）
-- 財務データ（過去4年）
-  - Revenue（売上高）
-  - EquityRatio（自己資本比率）
-  - OperatingCF（営業キャッシュフロー）
-  - Cash（現金等）
-- 配当データ（過去10年）
-  - 年間配当金合計
-  - 配当回数
+- 過去10年の配当データ  
+- 過去4年の財務データ（売上・EPS・ROE・CF・自己資本比率など）  
+- 時価総額・セクター分類  
+- 過去1年以内の株式分割  
+- 2年平均利回り・2年最大利回り  
 
-### 🔧 主な処理
-- yfinance の不安定さに対応した **安全な get_dividends()** を使用  
-- financials / balance_sheet / cashflow の欠損に強い  
-- 配当データの tz-aware / tz-naive 問題を完全排除  
-- 年度ごとに財務＋配当を統合した行を生成  
-- 最終的に **output_financial_dividend_merged.csv** を出力
+これらを取得・加工し、**独自の総合スコア（最大120点）** を算出。  
+最終的に **BuySignal（◎ / 〇 / △ / ×）** を付与して銘柄を抽出します。
 
 ---
 
-# 📌 2. jpx_scoring_engine.py  
-**目的：財務・収益性・配当履歴をスコア化し、総合スコアを算出**
-
-### 🧮 スコア構成（合計 100 点満点想定）
-
-## A. 配当スコア（最大 40 点）
-- 無配なし（20 点）
-- 増配年数 × 2 点（最大 20 点）
-- 特別配当は自動補正（normalize_special_dividends）
-
-## B. 財務スコア（最大 30 点）
-- 自己資本比率（最大 10 点）
-- 営業CF が直近4年すべてプラス（10 点）
-- Cash / MarketCap ≥ 10%（10 点）
-
-## C. 収益性スコア（最大 30 点）
-- ROE（最大 10 点）
-- 売上成長（過去3年で増加 → 10 点）
-- EPS がプラス（10 点）
-
-### 📤 出力
-- Symbol  
-- Company  
-- DividendScore  
-- FinancialScore  
-- ProfitScore  
-- TotalScore  
-- MarketCap  
-
-→ **scored_output.csv** を生成
+# 📂 構成
+本プロジェクトは 3 つのスクリプトで構成されています。
 
 ---
 
-# 📌 3. jpx_yield_filter.py  
-**目的：スコア上位銘柄に対して利回り・規模・セクター・割安度で最終フィルタリング**
+## 1. `jpx_screening_fetch.py`
+### 📥 役割：データ取得 & 前処理  
+JPX 上場銘柄に対して、以下のデータを yfinance から取得します。
 
-### 🏆 フィルタ対象
-- TotalScore ≥ 60 の銘柄
+### 取得データ
+- **配当金（過去10年）**
+- **売上（Revenue, 過去4年）**
+- **EPS（過去4年）**
+- **ROE（過去4年）**
+- **営業CF（OperatingCF, 過去4年）**
+- **自己資本比率（EquityRatio, 過去4年）**
+- **現金 / 時価総額（CashToMarketCap）**
+- **時価総額（MarketCap）**
+- **株式分割（過去1年以内）**
+- **GICS → 東証33業種への独自マッピング（SectorJP）**
 
-### 🏢 企業規模カテゴリ（MarketCap）
-| カテゴリ | 基準 |
+### 出力
+`jpx_screening_output.csv`
+
+---
+
+## 2. `jpx_scoring_engine.py`
+### 🧮 役割：総合スコア（最大120点）を算出  
+配当・財務・成長・規模・CF を総合評価します。
+
+---
+
+# 🔢 スコア構成（最新版）
+
+## **A. 配当スコア（最大40点）**
+- 無配なし：20点  
+- 増配年数 × 2点（最大20点）  
+- 特別配当は自動補正  
+
+---
+
+## **B. 財務スコア（最大30点）**
+- 自己資本比率（最大10点）  
+- 営業CFの連続性（最大10点）  
+- Cash / MarketCap ≥ 10%：10点  
+
+---
+
+## **C. 成長スコア（最大30点）**
+### 売上成長（Revenue Growth）
+- 年ごとに増収：+2点  
+- 3年連続増収：ボーナス +4点  
+
+### EPS
+- 4年連続プラス：+10点  
+
+### ROE
+- ROE に応じて段階加点（最大10点）
+
+---
+
+## **D. 規模スコア（最大5点）**
+時価総額に応じて加点：
+
+| 時価総額 | スコア |
+|---------|--------|
+| 1兆円以上 | +5 |
+| 3000億円以上 | +4 |
+| 1000億円以上 | +3 |
+| 400億円以上 | +2 |
+| 100億円以上 | +1 |
+
+---
+
+## **E. CF 合計プラス（+5点）**
+過去4年の営業CF合計がプラスなら +5 点。
+
+---
+
+## **F. 株式分割（SplitFlag）**
+過去1年以内に分割があれば `"Split"` を付与。
+
+---
+
+## 🧾 出力
+`jpx_scoring_output.csv`  
+（各銘柄の TotalScore と詳細スコアを含む）
+
+---
+
+## 3. `jpx_yield_filter.py`
+### 🎯 役割：利回り基準 & BuySignal による最終フィルタリング
+
+### 利回り基準（SizeCategory に応じて変動）
+- 超大型：3%  
+- 大型：3.5%  
+- 中型：4%  
+- 小型：4.5%  
+- 超小型：5%  
+
+### BuySignal 判定
+| シグナル | 意味 |
 |---------|------|
-| 超大型 | 1 兆円以上 |
-| 大型 | 3000 億円〜1 兆円 |
-| 中型 | 1000 億円〜3000 億円 |
-| 小型 | 400 億円〜1000 億円 |
-| 超小型 | 400 億円未満 |
+| ◎ | 強い買い |
+| 〇 | 買い |
+| △ | 中立 |
+| × | 見送り |
 
-### 📈 規模別の最低利回り基準
-| 規模 | 最低利回り |
-|------|-------------|
-| 超小型 | 6% |
-| 小型 | 5% |
-| 中型 | 4.5% |
-| 大型 | 4% |
-| 超大型 | 3.5% |
-
-### ⭐ TotalScore ≥ 80 の銘柄は **規模・利回り条件を無視して無条件採用**
+### 出力
+`yield_filtered_output.csv`  
+（最終候補銘柄一覧）
 
 ---
 
-# 📉 割安度判定（簡易版）
-### 直近2年の利回りを簡易計算
-- 年間配当金 ÷ 年間最安値  
-- 年間配当金 ÷ 年間平均株価  
+# 🏷️ セクター分類（GICS → 東証33業種）
+yfinance の GICS をそのまま使うと日本株に合わないため、  
+**独自の英→日マッピング（industry_map_jp）** を実装。
 
-→ これを直近2年分計算し、
+例：  
+- "Semiconductors" → "電気機器"  
+- "Internet Retail" → "小売業"  
+- "Drug Manufacturers" → "医薬品"  
+- "Consulting Services" → "サービス業"  
 
-- **AvgYield2Y（2年平均利回り）**
-- **MaxYield2Y（2年最高利回り）**
-
-を算出。
-
-現在利回りが MaxYield2Y に近いほど **割安** と判断可能。
+（詳細は `industry_map_jp` を参照）
 
 ---
 
-# 🏭 セクター分類（東証33業種）
-yfinance の GICS を日本の東証33業種へマッピング。
-
-例：
-- Technology → 情報・通信業  
-- Industrials → 機械 / 電気機器 / 建設業 など  
-- Consumer Defensive → 食料品  
-- Financial Services → 銀行 / 証券 / 保険  
-- Utilities → 電気・ガス業  
-- Real Estate → 不動産業  
-
-→ **SectorJP** として出力
+# 📊 出力例（1行）
+```
+7148.T,Financial Partners Group Co.,Ltd.,75,0.0720,0.0483,0.0788,130958909440,中型,その他金融業,,◎
+```
 
 ---
 
-# 📤 最終出力（yield_filtered_output.csv）
-以下の列を含む：
-
-- Symbol  
-- Company  
-- TotalScore  
-- DividendYield（直近1年）  
-- AvgYield2Y（直近2年平均利回り）  
-- MaxYield2Y（直近2年最高利回り）  
-- MarketCap  
-- SizeCategory  
-- SectorJP  
+# 🧪 実行方法
+```
+python jpx_screening_fetch.py
+python jpx_scoring_engine.py
+python jpx_yield_filter.py
+```
 
 ---
 
-# 🚀 実行手順（切れない形式）
-
-### **1. 財務＋配当データ取得**
-- コマンド：  
-  `python jpx_screening_fetch.py topix_core30.csv`
-
-### **2. スコアリング**
-- コマンド：  
-  `python jpx_scoring_engine.py`
-
-### **3. 最終フィルタリング**
-- コマンド：  
-  `python jpx_yield_filter.py`
-
----
-
-# 📦 出力ファイル一覧
-
-| ファイル名 | 内容 |
-|------------|------|
-| output_financial_dividend_merged.csv | 銘柄ごとの年度別財務＋配当データ |
-| scored_output.csv | スコアリング結果 |
-| yield_filtered_output.csv | 最終選定銘柄（利回り・規模・割安度・セクター反映） |
+# 📝 ライセンス
+MIT License
 
 ---
 
 # 🎉 まとめ
-YieldAnalytics は、
-
-- 財務健全性  
-- 収益性  
-- 配当履歴  
-- 企業規模  
-- セクター  
-- 割安度（利回り比較）  
-
-を統合した **日本株高配当スクリーナーの完成形** です。
-
-SCHD の思想を日本株に最適化した強力なツールとして利用できます。
+YieldAnalytics は、  
+**「高配当 × 財務健全 × 成長 × 規模 × CF」** を総合評価し、  
+“買うべき日本株” を自動抽出する強力な分析ツールです。
