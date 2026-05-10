@@ -48,9 +48,11 @@ def get_split_info(symbol):
         if splits.empty:
             return ""
 
+        # ★ index を tz-naive に変換
+        splits.index = splits.index.tz_localize(None)
+
         # ★ 過去1年以内の分割だけを見る
-        one_year_ago = pd.Timestamp.utcnow() - pd.Timedelta(days=365)
-        one_year_ago = one_year_ago.tz_localize(None)
+        one_year_ago = pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(days=365)
 
         recent_splits = splits[splits.index >= one_year_ago]
 
@@ -61,8 +63,6 @@ def get_split_info(symbol):
 
     except:
         return ""
-
-
 
 
 # ============================
@@ -147,35 +147,63 @@ def normalize_industry_name(industry: str) -> str:
 
 
 industry_map_jp = {
+    # 電気機器
     "Electronic Components": "電気機器",
     "Semiconductors": "電気機器",
     "Computer Hardware": "電気機器",
     "Consumer Electronics": "電気機器",
-    "Furnishings, Fixtures & Appliances": "その他製品",
+    "Electrical Equipment & Parts": "電気機器",
+    "Electronics & Computer Distribution": "電気機器",
 
+    # その他製品
+    "Furnishings, Fixtures & Appliances": "その他製品",
+    "Household Products": "その他製品",
+    "Household & Personal Products": "その他製品",
+
+    # 輸送用機器
     "Auto Manufacturers": "輸送用機器",
     "Auto Parts": "輸送用機器",
+    "Auto & Truck Dealerships": "輸送用機器",
 
+    # 機械
     "Machinery": "機械",
     "Industrial Machinery": "機械",
     "Specialty Industrial Machinery": "機械",
+    "Farm & Heavy Construction Machinery": "機械",
+    "Building Products & Equipment": "機械",
 
+    # 鉄鋼・非鉄
     "Steel": "鉄鋼",
     "Aluminum": "非鉄金属",
+    "Other Precious Metals & Mining": "非鉄金属",
+
+    # ガラス・土石
     "Building Materials": "ガラス・土石製品",
+
+    # 化学
     "Chemicals": "化学",
     "Specialty Chemicals": "化学",
+
+    # ゴム
     "Rubber & Plastics": "ゴム製品",
+
+    # 繊維
     "Textile Manufacturing": "繊維製品",
+    "Apparel Manufacturing": "繊維製品",
+
+    # パルプ・紙
     "Packaging & Containers": "パルプ・紙",
 
+    # エネルギー
     "Oil & Gas": "石油・石炭製品",
     "Oil & Gas Refining": "石油・石炭製品",
     "Coal": "鉱業",
 
+    # 電気・ガス
     "Utilities - Regulated Electric": "電気・ガス業",
     "Utilities - Regulated Gas": "電気・ガス業",
 
+    # 建設・不動産
     "Construction": "建設業",
     "Engineering & Construction": "建設業",
     "Residential Construction": "建設業",
@@ -183,6 +211,7 @@ industry_map_jp = {
     "Real Estate - Diversified": "不動産業",
     "Real Estate Services": "不動産業",
 
+    # 金融
     "Banks - Regional": "銀行業",
     "Banks - Diversified": "銀行業",
     "Insurance - Life": "保険業",
@@ -191,26 +220,37 @@ industry_map_jp = {
     "Financial Conglomerates": "その他金融業",
     "Credit Services": "その他金融業",
     "Asset Management": "その他金融業",
+    "Rental & Leasing Services": "その他金融業",
 
+    # 物流
     "Marine Shipping": "海運業",
     "Trucking": "陸運業",
     "Airlines": "空運業",
     "Integrated Freight & Logistics": "倉庫・運輸関連業",
+    "Industrial Distribution": "倉庫・運輸関連業",
 
+    # 小売
     "Retail": "小売業",
     "Department Stores": "小売業",
     "Grocery Stores": "小売業",
-    "Wholesale": "卸売業",
+    "Internet Retail": "小売業",
+    "Specialty Retail": "小売業",
+    "Pharmaceutical Retailers": "小売業",
 
+    # 食品
     "Food Products": "食料品",
     "Beverages - Non-Alcoholic": "食料品",
-    "Household Products": "その他製品",
+    "Packaged Foods": "食料品",
+    "Confectioners": "食料品",
 
+    # 医薬品・精密
     "Biotechnology": "医薬品",
     "Drug Manufacturers": "医薬品",
     "Drug Manufacturers - General": "医薬品",
     "Medical Devices": "精密機器",
+    "Medical Instruments & Supplies": "精密機器",
 
+    # 情報通信
     "Telecom Services": "情報・通信業",
     "Software - Application": "情報・通信業",
     "Software - Infrastructure": "情報・通信業",
@@ -218,13 +258,34 @@ industry_map_jp = {
     "Information Technology Services": "情報・通信業",
     "Internet Content & Information": "情報・通信業",
     "Electronic Gaming & Multimedia": "情報・通信業",
+    "Health Information Services": "情報・通信業",
 
+    # サービス業
     "Leisure": "サービス業",
     "Restaurants": "サービス業",
     "Professional Services": "サービス業",
     "Specialty Business Services": "サービス業",
     "Staffing & Employment Services": "サービス業",
+    "Consulting Services": "サービス業",
+    "Security & Protection Services": "サービス業",
+
+    # 精密機器
     "Scientific & Technical Instruments": "精密機器",
+
+    # 半導体製造装置
+    "Semiconductor Equipment & Materials": "電気機器",
+
+    # コングロマリット
+    "Conglomerates": "その他製品",
+
+    # エンタメ
+    "Entertainment": "サービス業",
+
+    # 環境
+    "Pollution & Treatment Controls": "サービス業",
+
+    # 廃棄物
+    "Waste Management": "サービス業",
 }
 
 
@@ -273,33 +334,46 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score):
         return "×"
 
     # ×：利回りが低すぎる
-    if dy < 0.02:
+    if dy < 0.0375:
+        return "△"
+    # ×：利回りが低すぎる
+    if dy < 0.03:
         return "×"
+    if total_score >= 90: # スコアが90点以上で下記を満たす場合優遇
+        # ◎：超大型で6%以上
+        if size_category == "超大型" and dy >= 0.06:
+            return "◎"
+        # ◎：大型で7%以上
+        if size_category == "超大型" and dy >= 0.07:
+            return "◎"
+        # ◎：中型で8%以上
+        if size_category == "超大型" and dy >= 0.08:
+            return "◎"
+    
+        # 〇：小型で9%以上
+        if size_category == "小型" and dy >= 0.09:
+            return "〇"
 
-    # ◎：超大型で6%以上
-    if size_category == "超大型" and dy >= 0.06:
-        return "◎"
+    # 〇：平均利回りの1.35倍以上
+    if avg2y is not None and dy >= avg2y * 1.35:
+        if not is_micro:
+            return "◎"
 
-    # 〇：中型以上で7%以上
-    if size_category in ["中型", "大型", "超大型"] and dy >= 0.07:
+    # 〇：過去最高利回り以上（割安）
+    if max2y is not None and dy >= max2y:
+        if not is_micro:
+            return "◎"
+    # 〇：平均利回りの1.2倍以上
+    if avg2y is not None and dy >= avg2y * 1.2:
         if not is_micro:
             return "〇"
 
-    # 〇：小型で9%以上
-    if size_category == "小型" and dy >= 0.09:
-        return "〇"
-
-    # 〇：平均利回りの1.3倍以上
-    if avg2y is not None and dy >= avg2y * 1.3:
+    # 〇：過去最高利回りの80%以上（割安）
+    if max2y is not None and dy >= max2y * 0.8:
         if not is_micro:
             return "〇"
 
-    # 〇：過去最高利回りの90%以上（割安）
-    if max2y is not None and dy >= max2y * 0.9:
-        if not is_micro:
-            return "〇"
-
-    # △：超小型は常に最大△
+    # △：超小型は△
     if is_micro:
         return "△"
 
@@ -315,7 +389,7 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score):
 # ============================
 def main():
     df = pd.read_csv("scored_output.csv")
-    df_top = df[df["TotalScore"] >= 60]
+    df_top = df[df["TotalScore"] >= 80]
 
     results = []
 

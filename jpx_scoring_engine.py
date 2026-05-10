@@ -72,7 +72,17 @@ def calc_financial_score(group):
     if pd.notna(cash) and pd.notna(mc) and mc > 0:
         if cash / mc >= 0.10:
             score += 8
-
+    
+    # 時価総額によるスコアリング
+    if mc >= 1_000_000_000_000:
+        score += 10   # 超大型
+    elif mc >= 300_000_000_000:
+        score += 8   # 大型
+    elif mc >= 100_000_000_000:
+        score += 5   # 中型
+    elif mc >= 40_000_000_000:
+        score += 2   # 小型
+    
     return score
 
 # ============================
@@ -91,12 +101,24 @@ def calc_profit_score(group):
         elif roe >= 0.05:
             score += 5
 
-    # Revenue Growth（過去3年）
-    rev = group.sort_values("Year")["Revenue"].dropna().tail(3)
-    if len(rev) == 3:
-        if rev.iloc[-1] > rev.iloc[0]:
-            score += 10
-
+    # Revenue Growth（過去4年の増収判定）
+    rev = (
+        group.sort_values("Year")["Revenue"]
+        .dropna()
+        .tail(4)
+    )
+    
+    if len(rev) == 4:
+        # ★ 年ごとの増収回数をカウント
+        inc_count = sum(rev.iloc[i] < rev.iloc[i+1] for i in range(3))
+    
+        # ★ 増収1回につき +2 点
+        score += inc_count * 2
+    
+        # ★ 3回すべて増収ならボーナス +4 点
+        if inc_count == 3:
+            score += 4
+    
     # EPS
     eps = latest["EPS"]
     if pd.notna(eps) and eps > 0:
