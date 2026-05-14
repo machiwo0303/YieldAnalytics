@@ -153,7 +153,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     csv_file = sys.argv[1]
-    df_codes = pd.read_csv(csv_file, header=None, names=["code"])
+    df_codes = pd.read_csv(csv_file, usecols=[0], header=None, names=["code"])
 
     all_rows = []
 
