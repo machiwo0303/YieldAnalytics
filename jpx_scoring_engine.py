@@ -19,9 +19,14 @@ def normalize_special_dividends(divs):
 # A. 配当スコア
 # ============================
 def calc_dividend_score(group):
-    divs = group.sort_values("Year")["Dividend"].tolist()
+    group_sorted = group.sort_values("Year")
+    divs = group_sorted["Dividend"].tolist()
+
+    problems = []  # ← 問題点を記録するリスト
+
     if len(divs) < 5:
-        return 0
+        problems.append("配当履歴不足")
+        return 0, problems
 
     divs = normalize_special_dividends(divs)
 
@@ -30,19 +35,67 @@ def calc_dividend_score(group):
     # 無配なし
     if all(d > 0 for d in divs):
         score += 20
+    else:
+        score -= 40
+        problems.append("無配年あり")
 
     # 増配年数
-    inc = sum(1 for i in range(len(divs)-1) if divs[i+1] > divs[i])
+    inc = sum(1 for i in range(len(divs)-1) if divs[i+1] >= divs[i])
     score += min(inc * 2, 20)
+    if inc == 0:
+        problems.append("増配なし")
+    
+    # ============================
+    # ★ 減配チェック（最新年は除外）
+    # ============================
+    
+    dec = 0
+    for i in range(len(divs) - 1):
+        # ★ 最新年（最後の比較）はスキップ
+        if i+1 == len(divs) - 1:
+            continue
+    
+        if divs[i+1] < divs[i]:
+            dec += 1
+    
+    if dec > 0:
+        score -= dec * 10
+    if dec > 1:
+        problems.append("2回減配あり")
+    if dec > 2:
+        problems.append("3回以上減配あり")
+    
+    # ============================
+    # ★ 配当性向チェック（新規追加）
+    # ============================
+    payout_penalty = 0
+    recent = group_sorted.tail(4)
 
-    return score
+    for _, row in recent.iterrows():
+        div = row["Dividend"]
+        eps = row["EPS"]
+
+        if pd.notna(div) and pd.notna(eps) and eps > 0:
+            payout = div / eps
+
+            if payout >= 1.00:
+                payout_penalty -= 5
+                problems.append("配当性向100%以上")
+            elif payout >= 0.70:
+                payout_penalty -= 2
+                problems.append("配当性向70%以上")
+
+    score += payout_penalty
+
+    return score, problems
+
 
 # ============================
 # B. 財務スコア
 # ============================
 def calc_financial_score(group):
     latest = group.sort_values("Year").iloc[-1]
-
+    problems = []
     score = 0
 
     # Equity Ratio
@@ -52,19 +105,23 @@ def calc_financial_score(group):
             score += 10
         elif er >= 0.30:
             score += 5
+        else:
+            problems.append("自己資本比率低い")
 
     # Operating CF（過去4年）
     cf = (
         group.sort_values("Year")["OperatingCF"]
-        .dropna()        # 欠損を除外
-        .tail(4)         # 最新4年を取得
+        .dropna()
+        .tail(4)
         .tolist()
     )
-    if all((x is not None) and (x > 0) for x in cf):
+
+    if all(x > 0 for x in cf):
         score += 8
-    # ★ 4年合計がプラスなら +4 点
     if sum(cf) > 0:
         score += 4
+    else:
+        problems.append("営業CF合計マイナス")
 
     # Cash / MarketCap
     cash = latest["Cash"]
@@ -72,25 +129,28 @@ def calc_financial_score(group):
     if pd.notna(cash) and pd.notna(mc) and mc > 0:
         if cash / mc >= 0.10:
             score += 8
-    
+        else:
+            problems.append("現金比率低い")
+
     # 時価総額によるスコアリング
     if mc >= 1_000_000_000_000:
-        score += 10   # 超大型
+        score += 0   # 超大型
     elif mc >= 300_000_000_000:
-        score += 8   # 大型
+        score += 0   # 大型
     elif mc >= 100_000_000_000:
-        score += 5   # 中型
+        score -= 2   # 中型
     elif mc >= 40_000_000_000:
-        score += 2   # 小型
-    
-    return score
+        score -= 5   # 小型
+    else:
+        score -= 10  # 超小型
+    return score, problems
 
 # ============================
 # C. 収益性スコア
 # ============================
 def calc_profit_score(group):
     latest = group.sort_values("Year").iloc[-1]
-
+    problems = []
     score = 0
 
     # ROE
@@ -100,31 +160,32 @@ def calc_profit_score(group):
             score += 10
         elif roe >= 0.05:
             score += 5
+        else:
+            problems.append("ROE低い")
 
-    # Revenue Growth（過去4年の増収判定）
+    # Revenue Growth
     rev = (
         group.sort_values("Year")["Revenue"]
         .dropna()
         .tail(4)
     )
-    
     if len(rev) == 4:
-        # ★ 年ごとの増収回数をカウント
         inc_count = sum(rev.iloc[i] < rev.iloc[i+1] for i in range(3))
-    
-        # ★ 増収1回につき +2 点
         score += inc_count * 2
-    
-        # ★ 3回すべて増収ならボーナス +4 点
+        if inc_count == 0:
+            problems.append("減収傾向")
         if inc_count == 3:
             score += 4
-    
+
     # EPS
     eps = latest["EPS"]
     if pd.notna(eps) and eps > 0:
         score += 10
+    else:
+        problems.append("EPS低い")
 
-    return score
+    return score, problems
+
 
 # ============================
 # メイン処理
@@ -136,9 +197,12 @@ results = []
 for symbol, group in df.groupby("Symbol"):
     group_sorted = group.sort_values("Year")
     latest = group_sorted.iloc[-1]
-    dividend_score = calc_dividend_score(group)
-    financial_score = calc_financial_score(group)
-    profit_score = calc_profit_score(group)
+
+    dividend_score, p1 = calc_dividend_score(group)
+    financial_score, p2 = calc_financial_score(group)
+    profit_score, p3 = calc_profit_score(group)
+
+    problems = list(set(p1 + p2 + p3))  # 重複排除
 
     total = dividend_score + financial_score + profit_score
 
@@ -149,8 +213,10 @@ for symbol, group in df.groupby("Symbol"):
         "FinancialScore": financial_score,
         "ProfitScore": profit_score,
         "TotalScore": total,
-        "MarketCap": latest["MarketCap"] 
+        "MarketCap": latest["MarketCap"],
+        "Problem": "/".join(problems)  # ← 追加
     })
+
 
 df_score = pd.DataFrame(results)
 

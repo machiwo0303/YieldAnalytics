@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import sys
+import time
 
 # -----------------------------
 # Helper: find correct row name
@@ -33,13 +34,27 @@ def safe_get_dividends(ticker, symbol):
     return div
 
 # -----------------------------
+# Safe info fetch
+# -----------------------------
+def safe_get_info(ticker, symbol, retry=3):
+    for _ in range(retry):
+        try:
+            return ticker.info
+        except Exception as e:
+            print(f"[WARN] Failed to fetch info for {symbol}: {e}")
+            time.sleep(1)
+    return {}  # 最終的にダメなら空dict
+
+# -----------------------------
 # Main processing function
 # -----------------------------
 def process_stock(symbol):
     ticker = yf.Ticker(symbol)
 
     # Basic info
-    info = ticker.info
+    info = safe_get_info(ticker, symbol)
+    if info is None:
+        info = {}
     company_name = info.get("longName", "Unknown")
     roe = info.get("returnOnEquity")
     eps = info.get("trailingEps")

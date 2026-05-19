@@ -1,5 +1,6 @@
 import yfinance as yf
 import pandas as pd
+import sys
 
 # ============================
 # 配当利回り（直近1年）
@@ -135,189 +136,17 @@ def get_size_category(market_cap):
         return "超小型"
 
 
-# ============================
-# industry → 東証33業種
-# ============================
-def normalize_industry_name(industry: str) -> str:
-    s = industry.strip()
-    s = s.replace("—", "-").replace("–", "-")
-    while "  " in s:
-        s = s.replace("  ", " ")
-    return s
 
-
-industry_map_jp = {
-    # 電気機器
-    "Electronic Components": "電気機器",
-    "Semiconductors": "電気機器",
-    "Computer Hardware": "電気機器",
-    "Consumer Electronics": "電気機器",
-    "Electrical Equipment & Parts": "電気機器",
-    "Electronics & Computer Distribution": "電気機器",
-
-    # その他製品
-    "Furnishings, Fixtures & Appliances": "その他製品",
-    "Household Products": "その他製品",
-    "Household & Personal Products": "その他製品",
-
-    # 輸送用機器
-    "Auto Manufacturers": "輸送用機器",
-    "Auto Parts": "輸送用機器",
-    "Auto & Truck Dealerships": "輸送用機器",
-
-    # 機械
-    "Machinery": "機械",
-    "Industrial Machinery": "機械",
-    "Specialty Industrial Machinery": "機械",
-    "Farm & Heavy Construction Machinery": "機械",
-    "Building Products & Equipment": "機械",
-
-    # 鉄鋼・非鉄
-    "Steel": "鉄鋼",
-    "Aluminum": "非鉄金属",
-    "Other Precious Metals & Mining": "非鉄金属",
-
-    # ガラス・土石
-    "Building Materials": "ガラス・土石製品",
-
-    # 化学
-    "Chemicals": "化学",
-    "Specialty Chemicals": "化学",
-
-    # ゴム
-    "Rubber & Plastics": "ゴム製品",
-
-    # 繊維
-    "Textile Manufacturing": "繊維製品",
-    "Apparel Manufacturing": "繊維製品",
-
-    # パルプ・紙
-    "Packaging & Containers": "パルプ・紙",
-
-    # エネルギー
-    "Oil & Gas": "石油・石炭製品",
-    "Oil & Gas Refining": "石油・石炭製品",
-    "Coal": "鉱業",
-
-    # 電気・ガス
-    "Utilities - Regulated Electric": "電気・ガス業",
-    "Utilities - Regulated Gas": "電気・ガス業",
-
-    # 建設・不動産
-    "Construction": "建設業",
-    "Engineering & Construction": "建設業",
-    "Residential Construction": "建設業",
-    "Real Estate - Development": "不動産業",
-    "Real Estate - Diversified": "不動産業",
-    "Real Estate Services": "不動産業",
-
-    # 金融
-    "Banks - Regional": "銀行業",
-    "Banks - Diversified": "銀行業",
-    "Insurance - Life": "保険業",
-    "Insurance - Property & Casualty": "保険業",
-    "Capital Markets": "証券、商品先物取引業",
-    "Financial Conglomerates": "その他金融業",
-    "Credit Services": "その他金融業",
-    "Asset Management": "その他金融業",
-    "Rental & Leasing Services": "その他金融業",
-
-    # 物流
-    "Marine Shipping": "海運業",
-    "Trucking": "陸運業",
-    "Airlines": "空運業",
-    "Integrated Freight & Logistics": "倉庫・運輸関連業",
-    "Industrial Distribution": "倉庫・運輸関連業",
-
-    # 小売
-    "Retail": "小売業",
-    "Department Stores": "小売業",
-    "Grocery Stores": "小売業",
-    "Internet Retail": "小売業",
-    "Specialty Retail": "小売業",
-    "Pharmaceutical Retailers": "小売業",
-
-    # 食品
-    "Food Products": "食料品",
-    "Beverages - Non-Alcoholic": "食料品",
-    "Packaged Foods": "食料品",
-    "Confectioners": "食料品",
-
-    # 医薬品・精密
-    "Biotechnology": "医薬品",
-    "Drug Manufacturers": "医薬品",
-    "Drug Manufacturers - General": "医薬品",
-    "Medical Devices": "精密機器",
-    "Medical Instruments & Supplies": "精密機器",
-
-    # 情報通信
-    "Telecom Services": "情報・通信業",
-    "Software - Application": "情報・通信業",
-    "Software - Infrastructure": "情報・通信業",
-    "IT Services": "情報・通信業",
-    "Information Technology Services": "情報・通信業",
-    "Internet Content & Information": "情報・通信業",
-    "Electronic Gaming & Multimedia": "情報・通信業",
-    "Health Information Services": "情報・通信業",
-
-    # サービス業
-    "Leisure": "サービス業",
-    "Restaurants": "サービス業",
-    "Professional Services": "サービス業",
-    "Specialty Business Services": "サービス業",
-    "Staffing & Employment Services": "サービス業",
-    "Consulting Services": "サービス業",
-    "Security & Protection Services": "サービス業",
-
-    # 精密機器
-    "Scientific & Technical Instruments": "精密機器",
-
-    # 半導体製造装置
-    "Semiconductor Equipment & Materials": "電気機器",
-
-    # コングロマリット
-    "Conglomerates": "その他製品",
-
-    # エンタメ
-    "Entertainment": "サービス業",
-
-    # 環境
-    "Pollution & Treatment Controls": "サービス業",
-
-    # 廃棄物
-    "Waste Management": "サービス業",
-}
-
-
-def get_sector_jp(symbol):
+def get_sector(symbol):
     ticker = yf.Ticker(symbol)
     info = ticker.info
 
-    industry = info.get("industry", None)
-    if industry is None:
+    # yfinance の sector をそのまま返す
+    sector = info.get("sector", None)
+    if sector is None:
         return "Unknown"
 
-    norm = normalize_industry_name(industry)
-    return industry_map_jp.get(norm, norm)
-
-
-# ============================
-# 規模別の利回り基準
-# ============================
-def meets_yield_threshold(size_category, dy):
-    if dy is None:
-        return False
-
-    thresholds = {
-        "超小型": 0.06,
-        "小型": 0.05,
-        "中型": 0.045,
-        "大型": 0.04,
-        "超大型": 0.035
-    }
-
-    th = thresholds.get(size_category, 0.05)
-    return dy >= th
+    return sector
 
 
 # ============================
@@ -327,55 +156,32 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score):
     if dy is None:
         return "×"
 
-    is_micro = (size_category == "超小型")
-
     # ×：平均利回り以下
     if avg2y is not None and dy < avg2y:
         return "×"
 
     # ×：利回りが低すぎる
-    if dy < 0.0375:
+    if dy < 0.03:
         return "△"
     # ×：利回りが低すぎる
-    if dy < 0.03:
+    if dy < 0.025:
         return "×"
-    if total_score >= 90: # スコアが90点以上で下記を満たす場合優遇
-        # ◎：超大型で6%以上
-        if size_category == "超大型" and dy >= 0.06:
-            return "◎"
-        # ◎：大型で7%以上
-        if size_category == "超大型" and dy >= 0.07:
-            return "◎"
-        # ◎：中型で8%以上
-        if size_category == "超大型" and dy >= 0.08:
-            return "◎"
-    
-        # 〇：小型で9%以上
-        if size_category == "小型" and dy >= 0.09:
-            return "〇"
 
     # 〇：平均利回りの1.35倍以上
     if avg2y is not None and dy >= avg2y * 1.35:
-        if not is_micro:
-            return "◎"
+        return "◎"
 
-    # 〇：過去最高利回り以上（割安）
-    if max2y is not None and dy >= max2y:
-        if not is_micro:
-            return "◎"
+    # 〇：過去最高利回りの95%以上（割安）
+    if max2y is not None and dy >= max2y * 0.95:
+        return "◎"
     # 〇：平均利回りの1.2倍以上
     if avg2y is not None and dy >= avg2y * 1.2:
-        if not is_micro:
-            return "〇"
+        return "〇"
 
     # 〇：過去最高利回りの80%以上（割安）
     if max2y is not None and dy >= max2y * 0.8:
-        if not is_micro:
-            return "〇"
+        return "〇"
 
-    # △：超小型は△
-    if is_micro:
-        return "△"
 
     # △：平均以上なら監視候補
     if avg2y is None or dy >= avg2y:
@@ -389,7 +195,11 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score):
 # ============================
 def main():
     df = pd.read_csv("scored_output.csv")
-    df_top = df[df["TotalScore"] >= 80]
+    threshold = int(sys.argv[1])
+    df_top = df[df["TotalScore"] >= threshold]
+    
+    # ★ Problem が 2つ以上ある銘柄を除外
+    df_top = df_top[df_top["Problem"].fillna("").apply(lambda x: len([p for p in x.split("/") if p.strip()]) <= 1)]
 
     results = []
 
@@ -402,15 +212,10 @@ def main():
 
         market_cap = row.get("MarketCap", None)
         size_category = get_size_category(market_cap)
-        sector_jp = get_sector_jp(symbol)
+        sector_jp = get_sector(symbol)
 
         # ★ 分割フラグ（補正は2年利回り関数内で実施済み）
         split_flag = get_split_info(symbol)
-
-        # ★ TotalScore 80以上は無条件採用
-        if row["TotalScore"] < 80:
-            if not meets_yield_threshold(size_category, dy):
-                continue
 
         buy_signal = get_buy_signal(size_category, dy, avg2y, max2y, row["TotalScore"])
 
@@ -425,7 +230,8 @@ def main():
             "SizeCategory": size_category,
             "SectorJP": sector_jp,
             "SplitFlag": split_flag,
-            "BuySignal": buy_signal
+            "BuySignal": buy_signal,
+            "Problem": row["Problem"]
         })
 
     df_result = pd.DataFrame(results)
