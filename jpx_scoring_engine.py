@@ -23,6 +23,7 @@ def calc_dividend_score(group):
     divs = group_sorted["Dividend"].tolist()
 
     problems = []  # ← 問題点を記録するリスト
+    excellent_dividend_flag = ""
 
     if len(divs) < 5:
         problems.append("配当履歴不足")
@@ -86,8 +87,11 @@ def calc_dividend_score(group):
                 problems.append("配当性向70%以上")
 
     score += payout_penalty
+    
+    if score >= 38:
+        excellent_dividend_flag = "累進配当"
 
-    return score, problems
+    return score, problems, excellent_dividend_flag
 
 
 # ============================
@@ -198,7 +202,7 @@ for symbol, group in df.groupby("Symbol"):
     group_sorted = group.sort_values("Year")
     latest = group_sorted.iloc[-1]
 
-    dividend_score, p1 = calc_dividend_score(group)
+    dividend_score, p1, edflag = calc_dividend_score(group)
     financial_score, p2 = calc_financial_score(group)
     profit_score, p3 = calc_profit_score(group)
 
@@ -214,7 +218,8 @@ for symbol, group in df.groupby("Symbol"):
         "ProfitScore": profit_score,
         "TotalScore": total,
         "MarketCap": latest["MarketCap"],
-        "Problem": "/".join(problems)  # ← 追加
+        "Problem": "/".join(problems),
+        "dividend_flag": edflag  # ← 追加
     })
 
 
