@@ -88,10 +88,26 @@ def calc_dividend_score(group):
 
     score += payout_penalty
     
-    if score >= 38:
-        excellent_dividend_flag = "累進配当"
+    # ============================
+    # ★ 平均増配率の計算（最新年は除外）
+    # ============================
+    growth_rates = []
+    for i in range(len(divs) - 2):  # 最新年を除外するため -2 まで
+        prev = divs[i]
+        curr = divs[i+1]
+        if prev > 0:
+            growth_rates.append((curr - prev) / prev)
 
-    return score, problems, excellent_dividend_flag
+    avg_growth_rate = None
+    growth_flg = None
+    
+    if growth_rates:
+        avg_growth_rate = sum(growth_rates) / len(growth_rates)
+    if score >= 38:
+        growth_flg = "累進"
+    # ★ マイナススコアは 0 に丸める
+    score = max(score, 0)
+    return score, problems, avg_growth_rate, growth_flg
 
 
 # ============================
@@ -147,6 +163,9 @@ def calc_financial_score(group):
         score -= 5   # 小型
     else:
         score -= 10  # 超小型
+    
+    # ★ マイナススコアは 0 に丸める
+    score = max(score, 0)
     return score, problems
 
 # ============================
@@ -202,7 +221,7 @@ for symbol, group in df.groupby("Symbol"):
     group_sorted = group.sort_values("Year")
     latest = group_sorted.iloc[-1]
 
-    dividend_score, p1, edflag = calc_dividend_score(group)
+    dividend_score, p1, avg_growth_rate, growth_flg = calc_dividend_score(group)
     financial_score, p2 = calc_financial_score(group)
     profit_score, p3 = calc_profit_score(group)
 
@@ -219,7 +238,8 @@ for symbol, group in df.groupby("Symbol"):
         "TotalScore": total,
         "MarketCap": latest["MarketCap"],
         "Problem": "/".join(problems),
-        "dividend_flag": edflag  # ← 追加
+        "AvgGrowthRate": avg_growth_rate,  # ← 追加
+        "CumulativeDividend": growth_flg  # ← 追加
     })
 
 

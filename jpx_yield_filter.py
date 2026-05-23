@@ -152,7 +152,7 @@ def get_sector(symbol):
 # ============================
 # 買い時判定（◎〇△×）
 # ============================
-def get_buy_signal(size_category, dy, avg2y, max2y, total_score, Cumulative_flg):
+def get_buy_signal(size_category, dy, avg2y, max2y, total_score, avg_growth_rate, growth_flg):
     if dy is None:
         return "×"
 
@@ -167,12 +167,12 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score, Cumulative_flg)
     if dy < 0.025:
         return "×"
     
-    # ☆：平均利回りの1.5倍以上　かつ　累進配当　かつ　スコア80点以上
-    if avg2y is not None and dy >= avg2y * 1.5 and Cumulative_flg is not None and total_score >= 80:
+    # ☆：平均利回りの1.5倍以上　かつ　平均増配率10%以上　かつ　スコア75点以上
+    if avg2y is not None and dy >= avg2y * 1.5 and avg_growth_rate >= 0.1 and growth_flg is not None and total_score >= 75:
         return "☆"
 
     # ☆：過去最高利回り以上（割安）　かつ　累進配当　かつ　スコア80点以上
-    if max2y is not None and dy >= max2y and Cumulative_flg is not None and total_score >= 80:
+    if max2y is not None and dy >= max2y and avg_growth_rate >= 0.1 and growth_flg is not None and total_score >= 75:
         return "☆"
 
     # ◎：平均利回りの1.35倍以上
@@ -224,8 +224,10 @@ def main():
 
         # ★ 分割フラグ（補正は2年利回り関数内で実施済み）
         split_flag = get_split_info(symbol)
-
-        buy_signal = get_buy_signal(size_category, dy, avg2y, max2y, row["TotalScore"], row["dividend_flag"])
+        
+        avg_growth_rate = row["AvgGrowthRate"]
+        growth_flg = row["CumulativeDividend"]
+        buy_signal = get_buy_signal(size_category, dy, avg2y, max2y, row["TotalScore"], avg_growth_rate, growth_flg)
 
         results.append({
             "Symbol": symbol,
@@ -240,7 +242,8 @@ def main():
             "SplitFlag": split_flag,
             "BuySignal": buy_signal,
             "Problem": row["Problem"],
-            "Cumulative dividend": row["dividend_flag"]
+            "AvgGrowthRate": avg_growth_rate,
+            "CumulativeDividend": growth_flg
         })
 
     df_result = pd.DataFrame(results)
