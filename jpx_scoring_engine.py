@@ -60,7 +60,7 @@ def calc_dividend_score(group):
             dec += 1
     
     if dec > 0:
-        score -= dec
+        score -= 1
     if dec > 1:
         score -= dec * 10
         problems.append("2回減配あり")
