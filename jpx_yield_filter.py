@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import sys
+from utils.sector_map import translate_sector
 
 # ============================
 # 配当利回り（直近1年）
@@ -142,11 +143,10 @@ def get_sector(symbol):
     info = ticker.info
 
     # yfinance の sector をそのまま返す
-    sector = info.get("sector", None)
-    if sector is None:
-        return "Unknown"
+    sector = info.get("sector", "")
+    sector_jp = translate_sector(sector)
 
-    return sector
+    return sector_jp
 
 
 # ============================
