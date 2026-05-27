@@ -71,6 +71,7 @@ def calc_dividend_score(group):
     # ★ 配当性向チェック（新規追加）
     # ============================
     payout_penalty = 0
+    payout70_count = 0   # ★ 70%以上の回数カウンタ
     recent = group_sorted.tail(4)
 
     for _, row in recent.iterrows():
@@ -84,8 +85,10 @@ def calc_dividend_score(group):
                 payout_penalty -= 5
                 problems.append("配当性向100%以上")
             elif payout >= 0.70:
-                payout_penalty -= 2
-                problems.append("配当性向70%以上")
+                payout70_count += 1
+                if payout70_count >= 2:   # ★ 2回目以降減点
+                    payout_penalty -= 2
+                    problems.append("配当性向70%以上2回")
 
     score += payout_penalty
     
@@ -106,6 +109,7 @@ def calc_dividend_score(group):
         avg_growth_rate = sum(growth_rates) / len(growth_rates)
     if score >= 38:
         growth_flg = "累進"
+        score = 40 # 最終年のカウントの仕様上9年累進なら満点に補正
     # ★ マイナススコアは 0 に丸める
     score = max(score, 0)
     return score, problems, avg_growth_rate, growth_flg
@@ -159,8 +163,10 @@ def calc_financial_score(group):
     elif mc >= 300_000_000_000:
         score += 0   # 大型
     elif mc >= 100_000_000_000:
-        score -= 2   # 中型
+        score += 0   # 中型
     elif mc >= 40_000_000_000:
+        score -= 3   # 小型
+    elif mc >= 10_000_000_000:
         score -= 5   # 小型
     else:
         score -= 10  # 超小型

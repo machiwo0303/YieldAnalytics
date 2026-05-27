@@ -167,12 +167,12 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score, avg_growth_rate
     if dy < 0.025:
         return "×"
     
-    # ☆：平均利回りの1.5倍以上　かつ　平均増配率10%以上　かつ　スコア75点以上
-    if avg2y is not None and dy >= avg2y * 1.5 and avg_growth_rate >= 0.1 and growth_flg is not None and total_score >= 75:
+    # ☆：平均利回りの1.5倍以上　かつ　平均増配率5%以上
+    if avg2y is not None and dy >= avg2y * 1.5 and avg_growth_rate >= 0.05 and growth_flg is not None:
         return "☆"
 
-    # ☆：過去最高利回り以上（割安）　かつ　累進配当　かつ　スコア80点以上
-    if max2y is not None and dy >= max2y and avg_growth_rate >= 0.1 and growth_flg is not None and total_score >= 75:
+    # ☆：過去最高利回り以上（割安）　かつ　平均増配率5%以上
+    if max2y is not None and dy >= max2y and avg_growth_rate >= 0.05 and growth_flg is not None:
         return "☆"
 
     # ◎：平均利回りの1.35倍以上
