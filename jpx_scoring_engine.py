@@ -89,8 +89,6 @@ def calc_dividend_score(group):
                 if payout70_count >= 2:   # ★ 2回目以降減点
                     payout_penalty -= 2
                     problems.append("配当性向70%以上2回")
-
-    score += payout_penalty
     
     # ============================
     # ★ 平均増配率の計算（最新年は除外）
@@ -107,6 +105,15 @@ def calc_dividend_score(group):
     
     if growth_rates:
         avg_growth_rate = sum(growth_rates) / len(growth_rates)
+        if avg_growth_rate <= 0.1:
+            payout_penalty -= 2
+        if avg_growth_rate <= 0.05:
+            payout_penalty -= 2
+        if avg_growth_rate <= 0.025:
+            payout_penalty -= 2
+        if avg_growth_rate == 0:
+            payout_penalty -= 14
+    score += payout_penalty
     if score >= 38:
         growth_flg = "累進"
         score = 40 # 最終年のカウントの仕様上9年累進なら満点に補正

@@ -148,6 +148,13 @@ def get_sector(symbol):
 
     return sector_jp
 
+def get_current_price(symbol):
+    ticker = yf.Ticker(symbol)
+    hist = ticker.history(period="1d")
+    if hist.empty:
+        return None
+    return hist["Close"].iloc[-1]
+
 
 # ============================
 # 買い時判定（◎〇△×）
@@ -228,10 +235,12 @@ def main():
         avg_growth_rate = row["AvgGrowthRate"]
         growth_flg = row["CumulativeDividend"]
         buy_signal = get_buy_signal(size_category, dy, avg2y, max2y, row["TotalScore"], avg_growth_rate, growth_flg)
+        current_price = get_current_price(symbol)
 
         results.append({
             "Symbol": symbol,
             "Company": company,
+            "CurrentPrice": current_price,
             "TotalScore": row["TotalScore"],
             "DividendYield": dy,
             "AvgYield2Y": avg2y,
