@@ -138,15 +138,18 @@ def get_size_category(market_cap):
 
 
 
+# ============================
+# セクター取得（安全版）
+# ============================
 def get_sector(symbol):
     ticker = yf.Ticker(symbol)
-    info = ticker.info
-
-    # yfinance の sector をそのまま返す
-    sector = info.get("sector", "")
-    sector_jp = translate_sector(sector)
-
-    return sector_jp
+    try:
+        info = ticker.info
+        sector = info.get("sector", "")
+        return translate_sector(sector)
+    except Exception as e:
+        print(f"[WARN] Sector取得失敗: {symbol} ({e})")
+        return "不明"
 
 def get_current_price(symbol):
     ticker = yf.Ticker(symbol)
@@ -211,11 +214,20 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score, avg_growth_rate
 def main():
     df = pd.read_csv("scored_output.csv")
     threshold = int(sys.argv[1])
-    df_top = df[df["TotalScore"] >= threshold]
+    growthrate = float(sys.argv[2])
+    df_top = df[
+        (
+            (df["TotalScore"] >= threshold) &
+            (df["AvgGrowthRate"] > 0)
+        )
+        |
+        (
+            (df["AvgGrowthRate"] >= growthrate) &
+            (df["CumulativeDividend"].notna()) &
+            (df["CumulativeDividend"] != "")
+        )
+    ]
     
-    # ★ Problem が 2つ以上ある銘柄を除外
-    df_top = df_top[df_top["Problem"].fillna("").apply(lambda x: len([p for p in x.split("/") if p.strip()]) <= 1)]
-
     results = []
 
     for _, row in df_top.iterrows():

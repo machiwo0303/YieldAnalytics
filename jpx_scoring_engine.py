@@ -105,14 +105,12 @@ def calc_dividend_score(group):
     
     if growth_rates:
         avg_growth_rate = sum(growth_rates) / len(growth_rates)
-        if avg_growth_rate <= 0.1:
-            payout_penalty -= 2
-        if avg_growth_rate <= 0.05:
-            payout_penalty -= 2
-        if avg_growth_rate <= 0.025:
+        if avg_growth_rate <= 0.03:
+            payout_penalty -= 1
+        if avg_growth_rate <= 0.015:
             payout_penalty -= 2
         if avg_growth_rate == 0:
-            payout_penalty -= 14
+            payout_penalty -= 17
     score += payout_penalty
     if score >= 38:
         growth_flg = "累進"
