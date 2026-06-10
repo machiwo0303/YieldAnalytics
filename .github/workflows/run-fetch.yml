@@ -2,6 +2,7 @@ name: Run JPX Screening Fetch
 
 on:
   workflow_dispatch:
+  push:  
 
 jobs:
   run-fetch:
