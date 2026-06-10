@@ -1,5 +1,4 @@
 # すべての CSV を無視
 *.csv
-
 # ただし data/ 配下は例外として許可
-!data/*.csv
+!input/*.csv
