@@ -25,7 +25,7 @@ jobs:
 
       - name: Run jpx_screening_fetch.py
         run: |
-          python jpx_screening_fetch.py input/topix_core30.csv
+          python jpx_screening_fetch.py input/jpx_all.csv
 
       - name: Commit latest CSV
         run: |
