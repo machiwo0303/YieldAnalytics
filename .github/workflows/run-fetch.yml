@@ -1,8 +1,10 @@
 name: Run JPX Screening Fetch
 
 on:
-  workflow_dispatch:
-  push:  
+  workflow_dispatch:  
+  push:
+  schedule:
+    - cron: "0 7 1 * *"   # 毎月1日 7:00 UTC（JST 16:00）
 
 jobs:
   run-fetch:
@@ -23,10 +25,13 @@ jobs:
 
       - name: Run jpx_screening_fetch.py
         run: |
-          python jpx_screening_fetch.py input/jpx_all.csv
+          python jpx_screening_fetch.py input/topix_core30.csv
 
-      - name: Upload output CSV
-        uses: actions/upload-artifact@v4
-        with:
-          name: output_financial_dividend_merged
-          path: output_financial_dividend_merged.csv
+      - name: Commit latest CSV
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          mv output_financial_dividend_merged.csv data/output_financial_dividend_merged.csv
+          git add data/output_financial_dividend_merged.csv
+          git commit -m "Update fetch output (auto)"
+          git push
