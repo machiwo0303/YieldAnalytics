@@ -32,6 +32,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           mv output_financial_dividend_merged.csv output/output_financial_dividend_merged.csv
-          git add data/output_financial_dividend_merged.csv
+          git add output/output_financial_dividend_merged.csv
           git commit -m "Update fetch output (auto)"
           git push
