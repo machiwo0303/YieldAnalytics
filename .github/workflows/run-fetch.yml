@@ -2,7 +2,6 @@ name: Run JPX Screening Fetch
 
 on:
   workflow_dispatch:  
-  push:
   schedule:
     - cron: "0 7 1 * *"   # 毎月1日 7:00 UTC（JST 16:00）
 

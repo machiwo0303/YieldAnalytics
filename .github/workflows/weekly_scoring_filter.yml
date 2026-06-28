@@ -1,0 +1,40 @@
+name: Weekly Scoring and Filtering
+
+on:
+  workflow_dispatch:
+  push:
+  schedule:
+    - cron: "10 6 * * 1"   # 毎週月曜 15:10 JST（UTC 06:10）
+
+jobs:
+  scoring_filter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scoring engine
+        run: |
+          python jpx_scoring_engine.py 
+
+      - name: Run yield filter
+        run: |
+          python jpx_yield_filter.py 80 0.1
+
+      - name: Commit weekly filtered result
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          mv yield_filtered_output.csv output/weekly_filtered_output.csv
+          git add output/weekly_filtered_output.csv
+          git commit -m "Weekly scoring/filter update (auto)" || echo "No changes"
+          git push
