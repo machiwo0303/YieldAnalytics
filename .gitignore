@@ -2,3 +2,5 @@
 *.csv
 # ただし data/ 配下は例外として許可
 !input/*.csv
+!output/*.csv
+
