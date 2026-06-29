@@ -1,0 +1,72 @@
+
+以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
+（抽出条件：BuySignal=☆、合計金額 ≤ 15000円、最大25銘柄）
+
+最終的な合計金額：14384.5円
+
+対象銘柄一覧（セクター順）：
+2379.T（コミュニケーション・サービス / 利回り: 5.28% / 株価: 1798.0円）
+6947.T（情報技術 / 利回り: 4.31% / 株価: 4640.0円）
+4743.T（情報技術 / 利回り: 4.94% / 株価: 1621.0円）
+417A.T（生活必需品 / 利回り: 6.16% / 株価: 1784.5円）
+7508.T（生活必需品 / 利回り: 5.05% / 株価: 1385.0円）
+9994.T（生活必需品 / 利回り: 3.70% / 株価: 2027.0円）
+1433.T（資本財・サービス / 利回り: 3.54% / 株価: 1129.0円）
+
+参照する URL 一覧：
+https://finance.yahoo.co.jp/quote/2379.T/financials
+https://finance.yahoo.co.jp/quote/2379.T/profile
+https://finance.yahoo.co.jp/quote/2379.T/dividend
+
+https://finance.yahoo.co.jp/quote/6947.T/financials
+https://finance.yahoo.co.jp/quote/6947.T/profile
+https://finance.yahoo.co.jp/quote/6947.T/dividend
+
+https://finance.yahoo.co.jp/quote/4743.T/financials
+https://finance.yahoo.co.jp/quote/4743.T/profile
+https://finance.yahoo.co.jp/quote/4743.T/dividend
+
+https://finance.yahoo.co.jp/quote/417A.T/financials
+https://finance.yahoo.co.jp/quote/417A.T/profile
+https://finance.yahoo.co.jp/quote/417A.T/dividend
+
+https://finance.yahoo.co.jp/quote/7508.T/financials
+https://finance.yahoo.co.jp/quote/7508.T/profile
+https://finance.yahoo.co.jp/quote/7508.T/dividend
+
+https://finance.yahoo.co.jp/quote/9994.T/financials
+https://finance.yahoo.co.jp/quote/9994.T/profile
+https://finance.yahoo.co.jp/quote/9994.T/dividend
+
+https://finance.yahoo.co.jp/quote/1433.T/financials
+https://finance.yahoo.co.jp/quote/1433.T/profile
+https://finance.yahoo.co.jp/quote/1433.T/dividend
+
+
+NotebookLM に問い合わせるプロンプト：
+
+各銘柄について以下を出力し、長期投資の観点から総合分析してください。
+（景気敏感だからと減点は不要です）
+
+除外判断は以下の順番で行ってください：
+① 長期投資の観点から今後の成長が見込みにくい企業は除外する  
+② 利回りが3%以下の企業は、今後大きな成長が見込めない場合のみ除外する  
+※除外した場合は、銘柄名と除外理由を必ず記載してください
+
+【銘柄コード】
+・セクター
+・景気敏感株か：〇×
+　※景気敏感株＝売上・利益が景気循環に連動しやすい業種（例：自動車、資本財、素材など）
+・財務健全性：◎〇△×
+・事業の強み：
+・事業の弱み：
+・増配力：〇△×
+・累進配当を掲げているか：◎〇△×
+・政策との相性：
+・グローバル展開：
+・10年以上保有の適性（成長性）：
+・総合評価（A〜C）：
+　※A＝長期投資に非常に適する、C＝長期投資にギリギリ適する
+
+最後に、除外されず「買い」と判断した銘柄の【証券コードのみ】と今時点の合計金額を一覧でまとめて出力してください。
+
