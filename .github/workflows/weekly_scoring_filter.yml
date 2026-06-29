@@ -24,6 +24,7 @@ jobs:
 
       - name: Run scoring engine
         run: |
+          cp output/output_financial_dividend_merged.csv .
           python jpx_scoring_engine.py 
 
       - name: Run yield filter
