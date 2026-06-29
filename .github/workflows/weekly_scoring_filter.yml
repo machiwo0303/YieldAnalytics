@@ -30,6 +30,11 @@ jobs:
       - name: Run yield filter
         run: |
           python jpx_yield_filter.py 80 0.1
+          
+      - name: Run make prompt
+        run: |
+          python makeprompt.py yield_filtered_output.csv 15000
+          
 
       - name: Commit weekly filtered result
         run: |
