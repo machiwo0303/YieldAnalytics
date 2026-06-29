@@ -43,5 +43,6 @@ jobs:
           mv yield_filtered_output.csv output/weekly_filtered_output.csv
           mv prompt_output.txt output/weekly_prompt_output.txt
           git add output/weekly_filtered_output.csv
+          git add output/weekly_prompt_output.txt
           git commit -m "Weekly scoring/filter update (auto)" || echo "No changes"
           git push
