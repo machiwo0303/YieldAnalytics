@@ -1,21 +1,36 @@
 import yfinance as yf
 import pandas as pd
 import sys
+import time
 from utils.sector_map import translate_sector
+
+# ============================
+# safe_call（全API呼び出しを安全化）
+# ============================
+def safe_call(func, *args, retries=3, wait=1):
+    for i in range(retries):
+        try:
+            return func(*args)
+        except yf.exceptions.YFRateLimitError:
+            print("Rate limit… retrying")
+            time.sleep(wait)
+        except Exception as e:
+            print(f"[WARN] yfinance error: {e}")
+            time.sleep(wait)
+    return None
+
 
 # ============================
 # 配当利回り（直近1年）
 # ============================
-def get_dividend_yield(symbol):
-    ticker = yf.Ticker(symbol)
-
-    hist = ticker.history(period="1d")
-    if hist.empty:
+def get_dividend_yield(ticker):
+    hist = safe_call(ticker.history, period="1d")
+    if hist is None or hist.empty:
         return None
     price = hist["Close"].iloc[-1]
 
-    div = ticker.get_dividends()
-    if div.empty:
+    div = safe_call(ticker.get_dividends)
+    if div is None or div.empty:
         return None
 
     idx = pd.DatetimeIndex(div.index)
@@ -23,67 +38,47 @@ def get_dividend_yield(symbol):
         idx = idx.tz_convert(None)
     div.index = idx
 
-    one_year_ago = pd.Timestamp.utcnow() - pd.Timedelta(days=365)
-    one_year_ago = one_year_ago.replace(tzinfo=None)
+    one_year_ago = pd.Timestamp.now("UTC") - pd.Timedelta(days=365)
+    one_year_ago = one_year_ago.tz_localize(None)
 
     total_div = div[div.index >= one_year_ago].sum()
 
-    if price > 0:
-        return total_div / price
-    return None
+    return total_div / price if price > 0 else None
 
 
 # ============================
-# 株式分割情報（倍率＋フラグ）
+# 株式分割情報
 # ============================
-def get_split_info(symbol):
-    ticker = yf.Ticker(symbol)
+def get_split_info(ticker):
     try:
-        actions = ticker.actions
-
-        if "Stock Splits" not in actions.columns:
+        actions = safe_call(lambda: ticker.actions)
+        if actions is None or "Stock Splits" not in actions.columns:
             return ""
 
         splits = actions["Stock Splits"]
         splits = splits[splits > 0]
-
         if splits.empty:
             return ""
 
-        # ★ index を tz-naive に変換
         splits.index = splits.index.tz_localize(None)
-
-        # ★ 過去1年以内の分割だけを見る
-        one_year_ago = pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(days=365)
+        one_year_ago = pd.Timestamp.now("UTC").tz_localize(None) - pd.Timedelta(days=365)
 
         recent_splits = splits[splits.index >= one_year_ago]
-
-        if recent_splits.empty:
-            return ""
-
-        return "Split"
-
+        return "Split" if not recent_splits.empty else ""
     except:
         return ""
 
 
 # ============================
-# 直近2年の利回り統計（平均・最高）＋分割補正
+# 直近2年の利回り統計
 # ============================
-def get_dividend_yield_2years_stats(symbol):
-    ticker = yf.Ticker(symbol)
-
-    # 調整後株価（分割・配当調整済み）
-    hist = ticker.history(period="2y", auto_adjust=True)
-    if hist.empty:
+def get_dividend_yield_2years_stats(ticker):
+    hist = safe_call(ticker.history, period="2y", auto_adjust=True)
+    if hist is None or hist.empty:
         return None, None
 
-    try:
-        div = ticker.get_dividends()
-    except:
-        return None, None
-
-    if div.empty:
+    div = safe_call(ticker.get_dividends)
+    if div is None or div.empty:
         return None, None
 
     idx = pd.DatetimeIndex(div.index)
@@ -107,7 +102,6 @@ def get_dividend_yield_2years_stats(symbol):
 
         if low_price > 0:
             yields.append(div_y / low_price)
-
         if avg_price > 0:
             yields.append(div_y / avg_price)
 
@@ -115,7 +109,6 @@ def get_dividend_yield_2years_stats(symbol):
         return None, None
 
     return sum(yields) / len(yields), max(yields)
-
 
 
 # ============================
@@ -137,71 +130,64 @@ def get_size_category(market_cap):
         return "超小型"
 
 
-
 # ============================
-# セクター取得（安全版）
+# セクター取得（info安全化）
 # ============================
-def get_sector(symbol):
-    ticker = yf.Ticker(symbol)
+def get_sector(ticker):
     try:
-        info = ticker.info
+        info = safe_call(lambda: ticker.info)
+        if info is None:
+            return "不明"
         sector = info.get("sector", "")
         return translate_sector(sector)
     except Exception as e:
-        print(f"[WARN] Sector取得失敗: {symbol} ({e})")
+        print(f"[WARN] Sector取得失敗: {ticker.ticker} ({e})")
         return "不明"
 
-def get_current_price(symbol):
-    ticker = yf.Ticker(symbol)
-    hist = ticker.history(period="1d")
-    if hist.empty:
+
+# ============================
+# 現在株価
+# ============================
+def get_current_price(ticker):
+    hist = safe_call(ticker.history, period="1d")
+    if hist is None or hist.empty:
         return None
     return hist["Close"].iloc[-1]
 
 
 # ============================
-# 買い時判定（◎〇△×）
+# 買い時判定
 # ============================
 def get_buy_signal(size_category, dy, avg2y, max2y, total_score, avg_growth_rate, growth_flg):
     if dy is None:
         return "×"
 
-    # ×：平均利回り以下
     if avg2y is not None and dy < avg2y:
         return "×"
 
-    # ×：利回りが低すぎる
     if dy < 0.03:
         return "△"
-    # ×：利回りが低すぎる
     if dy < 0.025:
         return "×"
-    
-    # ☆：平均利回りの1.5倍以上　かつ　平均増配率5%以上
+
     if avg2y is not None and dy >= avg2y * 1.5 and avg_growth_rate >= 0.05 and growth_flg is not None:
         return "☆"
 
-    # ☆：過去最高利回り以上（割安）　かつ　平均増配率5%以上
     if max2y is not None and dy >= max2y and avg_growth_rate >= 0.05 and growth_flg is not None:
         return "☆"
 
-    # ◎：平均利回りの1.35倍以上
     if avg2y is not None and dy >= avg2y * 1.35:
         return "◎"
 
-    # ◎：過去最高利回りの95%以上（割安）
     if max2y is not None and dy >= max2y * 0.95:
         return "◎"
-    # 〇：平均利回りの1.2倍以上
+
     if avg2y is not None and dy >= avg2y * 1.2:
         return "〇"
 
-    # 〇：過去最高利回りの80%以上（割安）
     if max2y is not None and dy >= max2y * 0.8:
         return "〇"
 
-
-    # △：平均以上なら監視候補
     if avg2y is None or dy >= avg2y:
         return "△"
 
@@ -215,6 +201,7 @@ def main():
     df = pd.read_csv("scored_output.csv")
     threshold = int(sys.argv[1])
     growthrate = float(sys.argv[2])
+
     df_top = df[
         (
             (df["TotalScore"] >= threshold) &
@@ -227,27 +214,25 @@ def main():
             (df["CumulativeDividend"] != "")
         )
     ]
-    
+
     results = []
 
     for _, row in df_top.iterrows():
         symbol = row["Symbol"]
         company = row["Company"]
 
-        dy = get_dividend_yield(symbol)
-        avg2y, max2y = get_dividend_yield_2years_stats(symbol)
+        ticker = yf.Ticker(symbol)
 
+        dy = get_dividend_yield(ticker)
+        avg2y, max2y = get_dividend_yield_2years_stats(ticker)
         market_cap = row.get("MarketCap", None)
         size_category = get_size_category(market_cap)
-        sector_jp = get_sector(symbol)
-
-        # ★ 分割フラグ（補正は2年利回り関数内で実施済み）
-        split_flag = get_split_info(symbol)
-        
+        sector_jp = get_sector(ticker)
+        split_flag = get_split_info(ticker)
         avg_growth_rate = row["AvgGrowthRate"]
         growth_flg = row["CumulativeDividend"]
         buy_signal = get_buy_signal(size_category, dy, avg2y, max2y, row["TotalScore"], avg_growth_rate, growth_flg)
-        current_price = get_current_price(symbol)
+        current_price = get_current_price(ticker)
 
         results.append({
             "Symbol": symbol,
