@@ -7,10 +7,10 @@ from utils.sector_map import translate_sector
 # ============================
 # safe_call（全API呼び出しを安全化）
 # ============================
-def safe_call(func, *args, retries=3, wait=1):
+def safe_call(func, *args, retries=3, wait=1, **kwargs):
     for i in range(retries):
         try:
-            return func(*args)
+            return func(*args, **kwargs)
         except yf.exceptions.YFRateLimitError:
             print("Rate limit… retrying")
             time.sleep(wait)
