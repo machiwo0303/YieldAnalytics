@@ -41,6 +41,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           mv yield_filtered_output.csv output/weekly_filtered_output.csv
+          mv prompt_output.txt output/weekly_prompt_output.txt
           git add output/weekly_filtered_output.csv
           git commit -m "Weekly scoring/filter update (auto)" || echo "No changes"
           git push
