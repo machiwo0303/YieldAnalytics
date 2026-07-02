@@ -2,7 +2,6 @@ name: Weekly Scoring and Filtering
 
 on:
   workflow_dispatch:
-  push:
   schedule:
     - cron: "10 6 * * 1"   # 毎週月曜 15:10 JST（UTC 06:10）
 
