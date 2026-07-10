@@ -168,11 +168,11 @@ def get_buy_signal(size_category, dy, avg2y, max2y, total_score, avg_growth_rate
     # ×：1%未満
     if dy < 0.01:
         return "×"
-    # ×：平均増配率20%未満かつ利回りが2%未満
-    if dy < 0.02 and avg_growth_rate < 0.2:
+    # ×：平均増配率50%未満かつ利回りが2%未満
+    if dy < 0.02 and avg_growth_rate < 0.5:
         return "×"
-    # △：平均増配率10%未満かつ利回りが3%未満
-    if dy < 0.03 and avg_growth_rate < 0.1:
+    # △：平均増配率20%未満かつ利回りが3%未満
+    if dy < 0.03 and avg_growth_rate < 0.2:
         return "△"
     
     # ☆：平均利回りの1.5倍以上　かつ　平均増配率5%以上
