@@ -2,45 +2,30 @@
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
 （抽出条件：BuySignal=☆、合計金額 ≤ 15000円、最大25銘柄）
 
-最終的な合計金額：14510.5円
+最終的な合計金額：10906.0円
 
 対象銘柄一覧（セクター順）：
-2733.T（一般消費財・サービス / 利回り: 4.43% / 株価: 2528.0円）
-3277.T（不動産 / 利回り: 5.50% / 株価: 645.0円）
-4684.T（情報技術 / 利回り: 2.06% / 株価: 4074.0円）
-2700.T（生活必需品 / 利回り: 5.33% / 株価: 1781.0円）
-2804.T（生活必需品 / 利回り: 2.53% / 株価: 1780.0円）
-7846.T（資本財・サービス / 利回り: 4.76% / 株価: 1742.5円）
-9052.T（資本財・サービス / 利回り: 2.55% / 株価: 1960.0円）
+2379.T（コミュニケーション・サービス / 利回り: 5.08% / 株価: 1869.0円）
+2326.T（情報技術 / 利回り: 2.40% / 株価: 3965.0円）
+7508.T（生活必需品 / 利回り: 4.99% / 株価: 1402.0円）
+5929.T（資本財・サービス / 利回り: 3.54% / 株価: 3670.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/2733.T/financials
-https://finance.yahoo.co.jp/quote/2733.T/profile
-https://finance.yahoo.co.jp/quote/2733.T/dividend
+https://finance.yahoo.co.jp/quote/2379.T/financials
+https://finance.yahoo.co.jp/quote/2379.T/profile
+https://finance.yahoo.co.jp/quote/2379.T/dividend
 
-https://finance.yahoo.co.jp/quote/3277.T/financials
-https://finance.yahoo.co.jp/quote/3277.T/profile
-https://finance.yahoo.co.jp/quote/3277.T/dividend
+https://finance.yahoo.co.jp/quote/2326.T/financials
+https://finance.yahoo.co.jp/quote/2326.T/profile
+https://finance.yahoo.co.jp/quote/2326.T/dividend
 
-https://finance.yahoo.co.jp/quote/4684.T/financials
-https://finance.yahoo.co.jp/quote/4684.T/profile
-https://finance.yahoo.co.jp/quote/4684.T/dividend
+https://finance.yahoo.co.jp/quote/7508.T/financials
+https://finance.yahoo.co.jp/quote/7508.T/profile
+https://finance.yahoo.co.jp/quote/7508.T/dividend
 
-https://finance.yahoo.co.jp/quote/2700.T/financials
-https://finance.yahoo.co.jp/quote/2700.T/profile
-https://finance.yahoo.co.jp/quote/2700.T/dividend
-
-https://finance.yahoo.co.jp/quote/2804.T/financials
-https://finance.yahoo.co.jp/quote/2804.T/profile
-https://finance.yahoo.co.jp/quote/2804.T/dividend
-
-https://finance.yahoo.co.jp/quote/7846.T/financials
-https://finance.yahoo.co.jp/quote/7846.T/profile
-https://finance.yahoo.co.jp/quote/7846.T/dividend
-
-https://finance.yahoo.co.jp/quote/9052.T/financials
-https://finance.yahoo.co.jp/quote/9052.T/profile
-https://finance.yahoo.co.jp/quote/9052.T/dividend
+https://finance.yahoo.co.jp/quote/5929.T/financials
+https://finance.yahoo.co.jp/quote/5929.T/profile
+https://finance.yahoo.co.jp/quote/5929.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
@@ -70,3 +55,5 @@ NotebookLM に問い合わせるプロンプト：
 
 最後に、除外されず「買い」と判断した銘柄の【証券コードのみ】と今時点の合計金額を一覧でまとめて出力してください。
 
+また、Excelの項目書き出し用に証券コードを下記のように表形式に出力もお願いします。
+|証券コード|数量（常に1）|明日の日付|
