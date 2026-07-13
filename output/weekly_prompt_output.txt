@@ -2,30 +2,35 @@
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
 （抽出条件：BuySignal=☆、合計金額 ≤ 15000円、最大25銘柄）
 
-最終的な合計金額：10906.0円
+最終的な合計金額：11832.0円
 
 対象銘柄一覧（セクター順）：
-2379.T（コミュニケーション・サービス / 利回り: 5.08% / 株価: 1869.0円）
-2326.T（情報技術 / 利回り: 2.40% / 株価: 3965.0円）
-7508.T（生活必需品 / 利回り: 4.99% / 株価: 1402.0円）
-5929.T（資本財・サービス / 利回り: 3.54% / 株価: 3670.0円）
+3277.T（不動産 / 利回り: 5.51% / 株価: 644.0円）
+1925.T（不動産 / 利回り: 3.85% / 株価: 4541.0円）
+3762.T（情報技術 / 利回り: 2.80% / 株価: 1854.0円）
+5929.T（資本財・サービス / 利回り: 3.55% / 株価: 3660.0円）
+1433.T（資本財・サービス / 利回り: 3.53% / 株価: 1133.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/2379.T/financials
-https://finance.yahoo.co.jp/quote/2379.T/profile
-https://finance.yahoo.co.jp/quote/2379.T/dividend
+https://finance.yahoo.co.jp/quote/3277.T/financials
+https://finance.yahoo.co.jp/quote/3277.T/profile
+https://finance.yahoo.co.jp/quote/3277.T/dividend
 
-https://finance.yahoo.co.jp/quote/2326.T/financials
-https://finance.yahoo.co.jp/quote/2326.T/profile
-https://finance.yahoo.co.jp/quote/2326.T/dividend
+https://finance.yahoo.co.jp/quote/1925.T/financials
+https://finance.yahoo.co.jp/quote/1925.T/profile
+https://finance.yahoo.co.jp/quote/1925.T/dividend
 
-https://finance.yahoo.co.jp/quote/7508.T/financials
-https://finance.yahoo.co.jp/quote/7508.T/profile
-https://finance.yahoo.co.jp/quote/7508.T/dividend
+https://finance.yahoo.co.jp/quote/3762.T/financials
+https://finance.yahoo.co.jp/quote/3762.T/profile
+https://finance.yahoo.co.jp/quote/3762.T/dividend
 
 https://finance.yahoo.co.jp/quote/5929.T/financials
 https://finance.yahoo.co.jp/quote/5929.T/profile
 https://finance.yahoo.co.jp/quote/5929.T/dividend
+
+https://finance.yahoo.co.jp/quote/1433.T/financials
+https://finance.yahoo.co.jp/quote/1433.T/profile
+https://finance.yahoo.co.jp/quote/1433.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
