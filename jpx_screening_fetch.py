@@ -24,6 +24,10 @@ def safe_get_dividends(ticker, symbol):
         print(f"[WARN] Failed to fetch dividends for {symbol}: {e}")
         return pd.Series(dtype=float)
 
+    # ★ None 対策（ここが重要）
+    if div is None:
+        return pd.Series(dtype=float)
+
     # tz-aware → tz-naive
     if not div.empty:
         idx = pd.DatetimeIndex(div.index)
@@ -32,6 +36,7 @@ def safe_get_dividends(ticker, symbol):
         div.index = idx
 
     return div
+
 
 # -----------------------------
 # Safe info fetch
