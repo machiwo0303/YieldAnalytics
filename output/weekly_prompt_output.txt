@@ -2,40 +2,30 @@
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
 （抽出条件：BuySignal=☆、合計金額 ≤ 15000円、最大25銘柄）
 
-最終的な合計金額：12492.5円
+最終的な合計金額：13060.0円
 
 対象銘柄一覧（セクター順）：
-3092.T（一般消費財・サービス / 利回り: 3.42% / 株価: 1139.5円）
-2733.T（一般消費財・サービス / 利回り: 4.36% / 株価: 2570.0円）
-1925.T（不動産 / 利回り: 3.82% / 株価: 4584.0円）
-3676.T（情報技術 / 利回り: 3.30% / 株価: 758.0円）
-7508.T（生活必需品 / 利回り: 5.07% / 株価: 1380.0円）
-9994.T（生活必需品 / 利回り: 3.64% / 株価: 2061.0円）
+7849.T（コミュニケーション・サービス / 利回り: 4.30% / 株価: 3020.0円）
+9989.T（ヘルスケア / 利回り: 3.51% / 株価: 3727.0円）
+1925.T（不動産 / 利回り: 3.84% / 株価: 4554.0円）
+417A.T（生活必需品 / 利回り: 6.25% / 株価: 1759.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/3092.T/financials
-https://finance.yahoo.co.jp/quote/3092.T/profile
-https://finance.yahoo.co.jp/quote/3092.T/dividend
+https://finance.yahoo.co.jp/quote/7849.T/financials
+https://finance.yahoo.co.jp/quote/7849.T/profile
+https://finance.yahoo.co.jp/quote/7849.T/dividend
 
-https://finance.yahoo.co.jp/quote/2733.T/financials
-https://finance.yahoo.co.jp/quote/2733.T/profile
-https://finance.yahoo.co.jp/quote/2733.T/dividend
+https://finance.yahoo.co.jp/quote/9989.T/financials
+https://finance.yahoo.co.jp/quote/9989.T/profile
+https://finance.yahoo.co.jp/quote/9989.T/dividend
 
 https://finance.yahoo.co.jp/quote/1925.T/financials
 https://finance.yahoo.co.jp/quote/1925.T/profile
 https://finance.yahoo.co.jp/quote/1925.T/dividend
 
-https://finance.yahoo.co.jp/quote/3676.T/financials
-https://finance.yahoo.co.jp/quote/3676.T/profile
-https://finance.yahoo.co.jp/quote/3676.T/dividend
-
-https://finance.yahoo.co.jp/quote/7508.T/financials
-https://finance.yahoo.co.jp/quote/7508.T/profile
-https://finance.yahoo.co.jp/quote/7508.T/dividend
-
-https://finance.yahoo.co.jp/quote/9994.T/financials
-https://finance.yahoo.co.jp/quote/9994.T/profile
-https://finance.yahoo.co.jp/quote/9994.T/dividend
+https://finance.yahoo.co.jp/quote/417A.T/financials
+https://finance.yahoo.co.jp/quote/417A.T/profile
+https://finance.yahoo.co.jp/quote/417A.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
@@ -44,8 +34,9 @@ NotebookLM に問い合わせるプロンプト：
 （景気敏感だからと減点は不要です）
 
 除外判断は以下の順番で行ってください：
-① 長期投資の観点から今後の成長が見込みにくい企業は除外する  
-② 利回りが3%以下の企業は、今後大きな成長が見込めない場合のみ除外する  
+① 長期投資の観点から今後の成長が見込みにくい企業は除外する
+② 最新の年間配当予想が、前期の年間配当実績と比較して「1円でも減少（減配）」している企業は、今後大きな成長が見込めない場合は除外する
+③ 利回りが3%以下の企業は、今後大きな成長が見込めない場合のみ除外する  
 ※除外した場合は、銘柄名と除外理由を必ず記載してください
 
 【銘柄コード】
