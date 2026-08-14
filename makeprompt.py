@@ -2,32 +2,24 @@ import pandas as pd
 import random
 import sys
 
-def generate_prompt(csv_file, max_total, output_file="prompt_output.txt"):
+def generate_prompt(csv_file, target_count, output_file="prompt_output.txt"):
     df = pd.read_csv(csv_file)
 
     # ☆ の銘柄だけ
     df_star = df[df["BuySignal"] == "☆"].copy()
 
-    # ランダム順に並べ替え
+    # ☆が1件もない場合は終了
+    if df_star.empty:
+        print("☆ の銘柄がありません。処理を終了します。")
+        return
+
+    # ランダム順に並べ替え（毎回違う結果）
     df_star = df_star.sample(frac=1).reset_index(drop=True)
 
-    selected = []
-    total_cost = 0
+    # 指定した個数だけ抽出
+    selected = df_star.head(target_count)
 
-    # 1銘柄ずつ追加し、合計金額が max_total を超えたらストップ
-    for _, row in df_star.iterrows():
-        price = row["CurrentPrice"]
-
-        if total_cost + price > max_total:
-            break
-
-        selected.append(row)
-        total_cost += price
-
-        if len(selected) >= 17:
-            break
-
-    df_selected = pd.DataFrame(selected)
+    df_selected = selected.copy()
 
     # セクター順に並び替え
     df_selected = df_selected.sort_values("SectorJP")
@@ -54,9 +46,7 @@ def generate_prompt(csv_file, max_total, output_file="prompt_output.txt"):
     # NotebookLM に渡すプロンプト
     prompt = f"""
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
-（抽出条件：BuySignal=☆、合計金額 ≤ {max_total}円、最大25銘柄）
-
-最終的な合計金額：{total_cost}円
+（抽出条件：BuySignal=☆、ランダム抽出 {target_count}銘柄）
 
 対象銘柄一覧（セクター順）：
 {companies_text}
@@ -89,11 +79,19 @@ NotebookLM に問い合わせるプロンプト：
 ・10年以上保有の適性（成長性）：
 ・総合評価（A〜C）：
 　※A＝長期投資に非常に適する、C＝長期投資にギリギリ適する
+　
+次に portfolio_result_all.csv の現在所有の評価額に対して、
+A評価であれば MAX20000円、B評価であれば MAX10000円、C評価であれば MAX10000円
+になるよう買い足しの数量を調整してください（売却は不要のためマイナス調整は行わない）。
 
-最後に、除外されず「買い」と判断した銘柄の【証券コードのみ】と今時点の合計金額を一覧でまとめて出力してください。
+最後に、
+除外されず「買い」と判断した銘柄の【証券コードのみ】と、
+今回計算した「買い足し数量 × 現在株価」の合計金額（＝今回購入する合計金額）を一覧でまとめて出力してください。
 
 また、Excelの項目書き出し用に証券コードを下記のように表形式に出力もお願いします。
-|証券コード|数量（常に1）|明日の日付|
+※数量0の場合は出力不要
+
+|証券コード|買い足し数量|明日の日付|
 """
 
     # 保存
@@ -104,5 +102,5 @@ NotebookLM に問い合わせるプロンプト：
 
 if __name__ == "__main__":
     csv_file = sys.argv[1]
-    max_total = int(sys.argv[2])  # ← 合計金額パラメータ
-    print(generate_prompt(csv_file, max_total))
+    target_count = int(sys.argv[2])  # ← 抽出したい銘柄数
+    print(generate_prompt(csv_file, target_count))

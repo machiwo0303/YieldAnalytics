@@ -32,7 +32,7 @@ jobs:
           
       - name: Run make prompt
         run: |
-          python makeprompt.py yield_filtered_output.csv 15000
+          python makeprompt.py yield_filtered_output.csv 7
           
 
       - name: Commit weekly filtered result
