@@ -3,42 +3,42 @@
 （抽出条件：BuySignal=☆、ランダム抽出 7銘柄）
 
 対象銘柄一覧（セクター順）：
-7849.T（コミュニケーション・サービス / 利回り: 4.37% / 株価: 2974.0円）
-2733.T（一般消費財・サービス / 利回り: 4.34% / 株価: 2581.0円）
-6947.T（情報技術 / 利回り: 4.00% / 株価: 5000.0円）
+2379.T（コミュニケーション・サービス / 利回り: 5.20% / 株価: 1828.0円）
+2733.T（一般消費財・サービス / 利回り: 4.33% / 株価: 2586.0円）
+2326.T（情報技術 / 利回り: 2.11% / 株価: 4495.0円）
+4743.T（情報技術 / 利回り: 4.82% / 株価: 1659.0円）
+417A.T（生活必需品 / 利回り: 6.13% / 株価: 1795.0円）
 9994.T（生活必需品 / 利回り: 3.59% / 株価: 2088.0円）
-417A.T（生活必需品 / 利回り: 6.11% / 株価: 1800.0円）
-5929.T（資本財・サービス / 利回り: 3.56% / 株価: 3651.0円）
-9171.T（資本財・サービス / 利回り: 3.87% / 株価: 1550.0円）
+7508.T（生活必需品 / 利回り: 4.84% / 株価: 1446.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/7849.T/financials
-https://finance.yahoo.co.jp/quote/7849.T/profile
-https://finance.yahoo.co.jp/quote/7849.T/dividend
+https://finance.yahoo.co.jp/quote/2379.T/financials
+https://finance.yahoo.co.jp/quote/2379.T/profile
+https://finance.yahoo.co.jp/quote/2379.T/dividend
 
 https://finance.yahoo.co.jp/quote/2733.T/financials
 https://finance.yahoo.co.jp/quote/2733.T/profile
 https://finance.yahoo.co.jp/quote/2733.T/dividend
 
-https://finance.yahoo.co.jp/quote/6947.T/financials
-https://finance.yahoo.co.jp/quote/6947.T/profile
-https://finance.yahoo.co.jp/quote/6947.T/dividend
+https://finance.yahoo.co.jp/quote/2326.T/financials
+https://finance.yahoo.co.jp/quote/2326.T/profile
+https://finance.yahoo.co.jp/quote/2326.T/dividend
 
-https://finance.yahoo.co.jp/quote/9994.T/financials
-https://finance.yahoo.co.jp/quote/9994.T/profile
-https://finance.yahoo.co.jp/quote/9994.T/dividend
+https://finance.yahoo.co.jp/quote/4743.T/financials
+https://finance.yahoo.co.jp/quote/4743.T/profile
+https://finance.yahoo.co.jp/quote/4743.T/dividend
 
 https://finance.yahoo.co.jp/quote/417A.T/financials
 https://finance.yahoo.co.jp/quote/417A.T/profile
 https://finance.yahoo.co.jp/quote/417A.T/dividend
 
-https://finance.yahoo.co.jp/quote/5929.T/financials
-https://finance.yahoo.co.jp/quote/5929.T/profile
-https://finance.yahoo.co.jp/quote/5929.T/dividend
+https://finance.yahoo.co.jp/quote/9994.T/financials
+https://finance.yahoo.co.jp/quote/9994.T/profile
+https://finance.yahoo.co.jp/quote/9994.T/dividend
 
-https://finance.yahoo.co.jp/quote/9171.T/financials
-https://finance.yahoo.co.jp/quote/9171.T/profile
-https://finance.yahoo.co.jp/quote/9171.T/dividend
+https://finance.yahoo.co.jp/quote/7508.T/financials
+https://finance.yahoo.co.jp/quote/7508.T/profile
+https://finance.yahoo.co.jp/quote/7508.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
