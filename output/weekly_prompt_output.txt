@@ -3,38 +3,38 @@
 （抽出条件：BuySignal=☆、ランダム抽出 7銘柄）
 
 対象銘柄一覧（セクター順）：
-9989.T（ヘルスケア / 利回り: 3.53% / 株価: 3710.0円）
-4743.T（情報技術 / 利回り: 4.96% / 株価: 1612.0円）
-6947.T（情報技術 / 利回り: 4.08% / 株価: 4900.0円）
-2326.T（情報技術 / 利回り: 2.11% / 株価: 4500.0円）
-9994.T（生活必需品 / 利回り: 3.65% / 株価: 2053.0円）
-9171.T（資本財・サービス / 利回り: 4.01% / 株価: 1497.0円）
-5929.T（資本財・サービス / 利回り: 3.63% / 株価: 3585.0円）
+7849.T（コミュニケーション・サービス / 利回り: 4.30% / 株価: 3020.0円）
+9989.T（ヘルスケア / 利回り: 3.51% / 株価: 3729.0円）
+2733.T（一般消費財・サービス / 利回り: 4.14% / 株価: 2708.0円）
+1925.T（不動産 / 利回り: 3.76% / 株価: 4651.0円）
+6947.T（情報技術 / 利回り: 4.12% / 株価: 4850.0円）
+2700.T（生活必需品 / 利回り: 5.55% / 株価: 1712.0円）
+5929.T（資本財・サービス / 利回り: 3.78% / 株価: 3438.0円）
 
 参照する URL 一覧：
+https://finance.yahoo.co.jp/quote/7849.T/financials
+https://finance.yahoo.co.jp/quote/7849.T/profile
+https://finance.yahoo.co.jp/quote/7849.T/dividend
+
 https://finance.yahoo.co.jp/quote/9989.T/financials
 https://finance.yahoo.co.jp/quote/9989.T/profile
 https://finance.yahoo.co.jp/quote/9989.T/dividend
 
-https://finance.yahoo.co.jp/quote/4743.T/financials
-https://finance.yahoo.co.jp/quote/4743.T/profile
-https://finance.yahoo.co.jp/quote/4743.T/dividend
+https://finance.yahoo.co.jp/quote/2733.T/financials
+https://finance.yahoo.co.jp/quote/2733.T/profile
+https://finance.yahoo.co.jp/quote/2733.T/dividend
+
+https://finance.yahoo.co.jp/quote/1925.T/financials
+https://finance.yahoo.co.jp/quote/1925.T/profile
+https://finance.yahoo.co.jp/quote/1925.T/dividend
 
 https://finance.yahoo.co.jp/quote/6947.T/financials
 https://finance.yahoo.co.jp/quote/6947.T/profile
 https://finance.yahoo.co.jp/quote/6947.T/dividend
 
-https://finance.yahoo.co.jp/quote/2326.T/financials
-https://finance.yahoo.co.jp/quote/2326.T/profile
-https://finance.yahoo.co.jp/quote/2326.T/dividend
-
-https://finance.yahoo.co.jp/quote/9994.T/financials
-https://finance.yahoo.co.jp/quote/9994.T/profile
-https://finance.yahoo.co.jp/quote/9994.T/dividend
-
-https://finance.yahoo.co.jp/quote/9171.T/financials
-https://finance.yahoo.co.jp/quote/9171.T/profile
-https://finance.yahoo.co.jp/quote/9171.T/dividend
+https://finance.yahoo.co.jp/quote/2700.T/financials
+https://finance.yahoo.co.jp/quote/2700.T/profile
+https://finance.yahoo.co.jp/quote/2700.T/dividend
 
 https://finance.yahoo.co.jp/quote/5929.T/financials
 https://finance.yahoo.co.jp/quote/5929.T/profile
