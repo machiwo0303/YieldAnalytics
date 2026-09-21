@@ -4,12 +4,12 @@
 
 対象銘柄一覧（セクター順）：
 7849.T（コミュニケーション・サービス / 利回り: 4.30% / 株価: 3020.0円）
-9989.T（ヘルスケア / 利回り: 3.51% / 株価: 3729.0円）
-2733.T（一般消費財・サービス / 利回り: 4.14% / 株価: 2708.0円）
-1925.T（不動産 / 利回り: 3.76% / 株価: 4651.0円）
-6947.T（情報技術 / 利回り: 4.12% / 株価: 4850.0円）
-2700.T（生活必需品 / 利回り: 5.55% / 株価: 1712.0円）
-5929.T（資本財・サービス / 利回り: 3.78% / 株価: 3438.0円）
+9989.T（ヘルスケア / 利回り: 3.61% / 株価: 3629.0円）
+3092.T（一般消費財・サービス / 利回り: 3.36% / 株価: 1162.0円）
+2733.T（一般消費財・サービス / 利回り: 4.14% / 株価: 2705.0円）
+4743.T（情報技術 / 利回り: 4.78% / 株価: 1673.0円）
+7508.T（生活必需品 / 利回り: 4.83% / 株価: 1450.0円）
+5929.T（資本財・サービス / 利回り: 3.76% / 株価: 3457.0円）
 
 参照する URL 一覧：
 https://finance.yahoo.co.jp/quote/7849.T/financials
@@ -20,21 +20,21 @@ https://finance.yahoo.co.jp/quote/9989.T/financials
 https://finance.yahoo.co.jp/quote/9989.T/profile
 https://finance.yahoo.co.jp/quote/9989.T/dividend
 
+https://finance.yahoo.co.jp/quote/3092.T/financials
+https://finance.yahoo.co.jp/quote/3092.T/profile
+https://finance.yahoo.co.jp/quote/3092.T/dividend
+
 https://finance.yahoo.co.jp/quote/2733.T/financials
 https://finance.yahoo.co.jp/quote/2733.T/profile
 https://finance.yahoo.co.jp/quote/2733.T/dividend
 
-https://finance.yahoo.co.jp/quote/1925.T/financials
-https://finance.yahoo.co.jp/quote/1925.T/profile
-https://finance.yahoo.co.jp/quote/1925.T/dividend
+https://finance.yahoo.co.jp/quote/4743.T/financials
+https://finance.yahoo.co.jp/quote/4743.T/profile
+https://finance.yahoo.co.jp/quote/4743.T/dividend
 
-https://finance.yahoo.co.jp/quote/6947.T/financials
-https://finance.yahoo.co.jp/quote/6947.T/profile
-https://finance.yahoo.co.jp/quote/6947.T/dividend
-
-https://finance.yahoo.co.jp/quote/2700.T/financials
-https://finance.yahoo.co.jp/quote/2700.T/profile
-https://finance.yahoo.co.jp/quote/2700.T/dividend
+https://finance.yahoo.co.jp/quote/7508.T/financials
+https://finance.yahoo.co.jp/quote/7508.T/profile
+https://finance.yahoo.co.jp/quote/7508.T/dividend
 
 https://finance.yahoo.co.jp/quote/5929.T/financials
 https://finance.yahoo.co.jp/quote/5929.T/profile
