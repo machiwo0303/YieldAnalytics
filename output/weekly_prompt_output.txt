@@ -3,42 +3,27 @@
 （抽出条件：BuySignal=☆、ランダム抽出 7銘柄）
 
 対象銘柄一覧（セクター順）：
-9989.T（ヘルスケア / 利回り: 3.61% / 株価: 3633.0円）
-2733.T（一般消費財・サービス / 利回り: 4.16% / 株価: 2695.0円）
-1925.T（不動産 / 利回り: 3.87% / 株価: 4521.0円）
-8929.T（不動産 / 利回り: 4.05% / 株価: 1382.0円）
-4743.T（情報技術 / 利回り: 4.83% / 株価: 1656.0円）
-3392.T（生活必需品 / 利回り: 3.27% / 株価: 764.0円）
-417A.T（生活必需品 / 利回り: 5.89% / 株価: 1868.0円）
+7849.T（コミュニケーション・サービス / 利回り: 4.34% / 株価: 2997.0円）
+8929.T（不動産 / 利回り: 4.12% / 株価: 1360.0円）
+3392.T（生活必需品 / 利回り: 3.36% / 株価: 745.0円）
+2700.T（生活必需品 / 利回り: 5.33% / 株価: 1782.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/9989.T/financials
-https://finance.yahoo.co.jp/quote/9989.T/profile
-https://finance.yahoo.co.jp/quote/9989.T/dividend
-
-https://finance.yahoo.co.jp/quote/2733.T/financials
-https://finance.yahoo.co.jp/quote/2733.T/profile
-https://finance.yahoo.co.jp/quote/2733.T/dividend
-
-https://finance.yahoo.co.jp/quote/1925.T/financials
-https://finance.yahoo.co.jp/quote/1925.T/profile
-https://finance.yahoo.co.jp/quote/1925.T/dividend
+https://finance.yahoo.co.jp/quote/7849.T/financials
+https://finance.yahoo.co.jp/quote/7849.T/profile
+https://finance.yahoo.co.jp/quote/7849.T/dividend
 
 https://finance.yahoo.co.jp/quote/8929.T/financials
 https://finance.yahoo.co.jp/quote/8929.T/profile
 https://finance.yahoo.co.jp/quote/8929.T/dividend
 
-https://finance.yahoo.co.jp/quote/4743.T/financials
-https://finance.yahoo.co.jp/quote/4743.T/profile
-https://finance.yahoo.co.jp/quote/4743.T/dividend
-
 https://finance.yahoo.co.jp/quote/3392.T/financials
 https://finance.yahoo.co.jp/quote/3392.T/profile
 https://finance.yahoo.co.jp/quote/3392.T/dividend
 
-https://finance.yahoo.co.jp/quote/417A.T/financials
-https://finance.yahoo.co.jp/quote/417A.T/profile
-https://finance.yahoo.co.jp/quote/417A.T/dividend
+https://finance.yahoo.co.jp/quote/2700.T/financials
+https://finance.yahoo.co.jp/quote/2700.T/profile
+https://finance.yahoo.co.jp/quote/2700.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
