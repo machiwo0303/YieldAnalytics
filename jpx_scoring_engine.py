@@ -33,12 +33,33 @@ def calc_dividend_score(group):
 
     score = 0
 
-    # 無配なし
-    if all(d > 0 for d in divs):
+    # ============================
+    # ★ 連続有配年数による加点（当年は途中のため完了年のみで判定）
+    # ============================
+    done = divs[:-1]  # 当年を除く完了年
+    streak = 0        # 直近の完了年から遡った連続有配年数
+    for d in reversed(done):
+        if d > 0:
+            streak += 1
+        else:
+            break
+
+    if streak >= len(done):      # 完了年すべて有配（従来の無配なし）
         score += 20
+    elif streak >= 5:
+        score += 10
+        problems.append("有配5年以上10年未満")
+    elif streak >= 4:
+        score += 5
+        problems.append("有配4年")
     else:
         score -= 40
-        problems.append("無配年あり")
+        problems.append("直近4年に無配あり")
+
+    # 以降の増配・減配・増配率は有配期間（＋当年）のみで計算する
+    # （無配期間の 0→0 が「据え置き＝増配」として加点されるのを防ぐ）
+    if 4 <= streak < len(done):
+        divs = divs[len(divs) - 1 - streak:]
 
     # 増配年数
     inc = sum(1 for i in range(len(divs)-1) if divs[i+1] >= divs[i])
