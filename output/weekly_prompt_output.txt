@@ -1,44 +1,59 @@
 
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
-（抽出条件：BuySignal=☆、ランダム抽出 7銘柄）
+（抽出条件：MonthlyPick=Y、10銘柄）
 
 対象銘柄一覧（セクター順）：
-7849.T（コミュニケーション・サービス / 利回り: 4.35% / 株価: 2988.0円）
-9989.T（ヘルスケア / 利回り: 3.74% / 株価: 3526.0円）
-1911.T（一般消費財・サービス / 利回り: 4.53% / 株価: 1170.0円）
-8929.T（不動産 / 利回り: 4.24% / 株価: 1322.0円）
-3804.T（情報技術 / 利回り: 2.09% / 株価: 447.0円）
-2700.T（生活必需品 / 利回り: 5.49% / 株価: 1730.0円）
-9171.T（資本財・サービス / 利回り: 4.16% / 株価: 1441.0円）
+1911.T（一般消費財・サービス / 利回り: 4.54% / 株価: 1167.5円）
+6902.T（一般消費財・サービス / 利回り: 3.90% / 株価: 1845.0円）
+3925.T（情報技術 / 利回り: 5.28% / 株価: 1325.0円）
+3921.T（情報技術 / 利回り: 3.68% / 株価: 1578.0円）
+417A.T（生活必需品 / 利回り: 6.10% / 株価: 1859.5円）
+6294.T（資本財・サービス / 利回り: 6.02% / 株価: 1876.0円）
+6368.T（資本財・サービス / 利回り: 5.30% / 株価: 2472.0円）
+6088.T（資本財・サービス / 利回り: 4.29% / 株価: 606.0円）
+6307.T（資本財・サービス / 利回り: 6.80% / 株価: 441.0円）
+5929.T（資本財・サービス / 利回り: 4.01% / 株価: 3520.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/7849.T/financials
-https://finance.yahoo.co.jp/quote/7849.T/profile
-https://finance.yahoo.co.jp/quote/7849.T/dividend
-
-https://finance.yahoo.co.jp/quote/9989.T/financials
-https://finance.yahoo.co.jp/quote/9989.T/profile
-https://finance.yahoo.co.jp/quote/9989.T/dividend
-
 https://finance.yahoo.co.jp/quote/1911.T/financials
 https://finance.yahoo.co.jp/quote/1911.T/profile
 https://finance.yahoo.co.jp/quote/1911.T/dividend
 
-https://finance.yahoo.co.jp/quote/8929.T/financials
-https://finance.yahoo.co.jp/quote/8929.T/profile
-https://finance.yahoo.co.jp/quote/8929.T/dividend
+https://finance.yahoo.co.jp/quote/6902.T/financials
+https://finance.yahoo.co.jp/quote/6902.T/profile
+https://finance.yahoo.co.jp/quote/6902.T/dividend
 
-https://finance.yahoo.co.jp/quote/3804.T/financials
-https://finance.yahoo.co.jp/quote/3804.T/profile
-https://finance.yahoo.co.jp/quote/3804.T/dividend
+https://finance.yahoo.co.jp/quote/3925.T/financials
+https://finance.yahoo.co.jp/quote/3925.T/profile
+https://finance.yahoo.co.jp/quote/3925.T/dividend
 
-https://finance.yahoo.co.jp/quote/2700.T/financials
-https://finance.yahoo.co.jp/quote/2700.T/profile
-https://finance.yahoo.co.jp/quote/2700.T/dividend
+https://finance.yahoo.co.jp/quote/3921.T/financials
+https://finance.yahoo.co.jp/quote/3921.T/profile
+https://finance.yahoo.co.jp/quote/3921.T/dividend
 
-https://finance.yahoo.co.jp/quote/9171.T/financials
-https://finance.yahoo.co.jp/quote/9171.T/profile
-https://finance.yahoo.co.jp/quote/9171.T/dividend
+https://finance.yahoo.co.jp/quote/417A.T/financials
+https://finance.yahoo.co.jp/quote/417A.T/profile
+https://finance.yahoo.co.jp/quote/417A.T/dividend
+
+https://finance.yahoo.co.jp/quote/6294.T/financials
+https://finance.yahoo.co.jp/quote/6294.T/profile
+https://finance.yahoo.co.jp/quote/6294.T/dividend
+
+https://finance.yahoo.co.jp/quote/6368.T/financials
+https://finance.yahoo.co.jp/quote/6368.T/profile
+https://finance.yahoo.co.jp/quote/6368.T/dividend
+
+https://finance.yahoo.co.jp/quote/6088.T/financials
+https://finance.yahoo.co.jp/quote/6088.T/profile
+https://finance.yahoo.co.jp/quote/6088.T/dividend
+
+https://finance.yahoo.co.jp/quote/6307.T/financials
+https://finance.yahoo.co.jp/quote/6307.T/profile
+https://finance.yahoo.co.jp/quote/6307.T/dividend
+
+https://finance.yahoo.co.jp/quote/5929.T/financials
+https://finance.yahoo.co.jp/quote/5929.T/profile
+https://finance.yahoo.co.jp/quote/5929.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
@@ -67,10 +82,9 @@ NotebookLM に問い合わせるプロンプト：
 ・総合評価（A〜C）：
 　※A＝長期投資に非常に適する、C＝長期投資にギリギリ適する
 　
-次に portfolio_result_all.csv の現在所有の評価額に対して、
-A評価であれば MAX20000円、B評価であれば MAX10000円、C評価であれば MAX10000円
-になるよう買い足しの数量を調整してください（売却は不要のためマイナス調整は行わない）。
-
+次に、portfolio_result_all.csv の現在所有の評価額（＝現在株価 × 現在保有株数）に対して、 まず各銘柄について「10000円分の買い足し（11000円までは許容）」を基本としつつ、 以下の評価ランク別の上限額になるように買い足し数量を調整してください。
+● 評価A：買い足し後の評価額が 30,000円以内（33,000円までは許容） ● 評価B：買い足し後の評価額が 20,000円以内（22,000円までは許容） ● 評価C：買い足し後の評価額が 10,000円以内（11,000円までは許容）
+※買い足し数量（株数）は、上記の**「追加購入10,000円（最大11,000円）」と「買い足し後評価額の上限（許容値含む）」のどちらも超えない最大の整数（小数点切り捨て）**としてください。 ※売却は不要のため、現在評価額がすでに上限を超えている場合は買い足し数量を0とし、マイナス調整は行わない
 最後に、
 除外されず「買い」と判断した銘柄の【証券コードのみ】と、
 今回計算した「買い足し数量 × 現在株価」の合計金額（＝今回購入する合計金額）を一覧でまとめて出力してください。
