@@ -1,23 +1,23 @@
 import pandas as pd
-import random
 import sys
 
-def generate_prompt(csv_file, target_count, output_file="prompt_output.txt"):
+def generate_prompt(csv_file, target_count=None, output_file="prompt_output.txt"):
     df = pd.read_csv(csv_file)
 
-    # ☆ の銘柄だけ
-    df_star = df[df["BuySignal"] == "☆"].copy()
-
-    # ☆が1件もない場合は終了
-    if df_star.empty:
-        print("☆ の銘柄がありません。処理を終了します。")
+    # MonthlyPick 列が Y の銘柄だけ（今月の買い時）
+    if "MonthlyPick" not in df.columns:
+        print("MonthlyPick 列がありません。新しい yield_filtered_output.csv を指定してください。")
         return
 
-    # ランダム順に並べ替え（毎回違う結果）
-    df_star = df_star.sample(frac=1).reset_index(drop=True)
+    df_pick = df[df["MonthlyPick"] == "Y"].copy()
 
-    # 指定した個数だけ抽出
-    selected = df_star.head(target_count)
+    # Y が1件もない場合は終了
+    if df_pick.empty:
+        print("MonthlyPick=Y の銘柄がありません。処理を終了します。")
+        return
+
+    # 件数を指定した場合のみ、CSVの並び順（優先度順）で上位だけ使う
+    selected = df_pick if target_count is None else df_pick.head(target_count)
 
     df_selected = selected.copy()
 
@@ -46,7 +46,7 @@ def generate_prompt(csv_file, target_count, output_file="prompt_output.txt"):
     # NotebookLM に渡すプロンプト
     prompt = f"""
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
-（抽出条件：BuySignal=☆、ランダム抽出 {target_count}銘柄）
+（抽出条件：MonthlyPick=Y、{len(df_selected)}銘柄）
 
 対象銘柄一覧（セクター順）：
 {companies_text}
@@ -80,10 +80,9 @@ NotebookLM に問い合わせるプロンプト：
 ・総合評価（A〜C）：
 　※A＝長期投資に非常に適する、C＝長期投資にギリギリ適する
 　
-次に portfolio_result_all.csv の現在所有の評価額に対して、
-A評価であれば MAX20000円、B評価であれば MAX10000円、C評価であれば MAX10000円
-になるよう買い足しの数量を調整してください（売却は不要のためマイナス調整は行わない）。
-
+次に、portfolio_result_all.csv の現在所有の評価額（＝現在株価 × 現在保有株数）に対して、 まず各銘柄について「10000円分の買い足し（11000円までは許容）」を基本としつつ、 以下の評価ランク別の上限額になるように買い足し数量を調整してください。
+● 評価A：買い足し後の評価額が 30,000円以内（33,000円までは許容） ● 評価B：買い足し後の評価額が 20,000円以内（22,000円までは許容） ● 評価C：買い足し後の評価額が 10,000円以内（11,000円までは許容）
+※買い足し数量（株数）は、上記の**「追加購入10,000円（最大11,000円）」と「買い足し後評価額の上限（許容値含む）」のどちらも超えない最大の整数（小数点切り捨て）**としてください。 ※売却は不要のため、現在評価額がすでに上限を超えている場合は買い足し数量を0とし、マイナス調整は行わない
 最後に、
 除外されず「買い」と判断した銘柄の【証券コードのみ】と、
 今回計算した「買い足し数量 × 現在株価」の合計金額（＝今回購入する合計金額）を一覧でまとめて出力してください。
@@ -102,5 +101,6 @@ A評価であれば MAX20000円、B評価であれば MAX10000円、C評価で�
 
 if __name__ == "__main__":
     csv_file = sys.argv[1]
-    target_count = int(sys.argv[2])  # ← 抽出したい銘柄数
+    # 銘柄数の指定は任意（省略時は MonthlyPick=Y をすべて対象にする）
+    target_count = int(sys.argv[2]) if len(sys.argv) > 2 else None
     print(generate_prompt(csv_file, target_count))

@@ -32,8 +32,8 @@ jobs:
           
       - name: Run make prompt
         run: |
-          python makeprompt.py yield_filtered_output.csv 7
-          
+          echo "No data." > prompt_output.txt
+          python makeprompt.py yield_filtered_output.csv
 
       - name: Commit weekly filtered result
         run: |
