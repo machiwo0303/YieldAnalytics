@@ -1,10 +1,21 @@
-# 📘 YieldAnalytics — 日本株 高配当 × 財務 × 収益性 スクリーニングシステム
+# 📘 YieldAnalytics — 日本株 累進配当 × 財務 × 収益性 スクリーニングシステム
 
-YieldAnalytics は、JPX 全上場銘柄（約3,700銘柄）を対象に、
-**配当・財務・収益性の3軸でスコアリングし、現在の利回りが割安な銘柄を「買いシグナル」で判定する**分析ツールです。
-最後に、有望銘柄を NotebookLM で深掘り分析するためのプロンプトまで自動生成します。
+YieldAnalytics は、JPX 全上場銘柄（約3,700銘柄）から **「累進的に配当を出し続けている優良な高配当株」だけを ウォッチリスト（約100件）に絞り込み、その中から「今月買うべき銘柄」を10件選ぶ** 分析ツールです。
+選んだ銘柄は、NotebookLM で深掘り分析するためのプロンプトまで自動生成します。
 
 データ取得には [yfinance](https://github.com/ranaroussi/yfinance) を使用し、GitHub Actions で定期実行されます。
+
+---
+
+## 🎯 考え方：ウォッチリストと「今月の買い時」を分ける
+
+| | 目的 | 判定に使うもの |
+|---|---|---|
+| **ウォッチリスト**（約100件） | 長く持ちたい銘柄の母集団を選ぶ | 配当の実績・財務・収益性、**過去2年の平均利回り**（株価に左右されない） |
+| **今月の買い時**（10件） | 今月買う銘柄を選ぶ | **現在の利回り**が過去2年の水準と比べて割安か（買いシグナル） |
+
+ウォッチリストの判定に現在利回りを使わないのがポイントです。現在利回りは株価が下がるほど高くなるため、使うと「買い時の銘柄」だけが入り、割高になると抜けてしまいます。
+「買い時でない銘柄（シグナル × ）」もウォッチリストに残り、時期が来れば買い時に上がってきます。
 
 ---
 
@@ -20,22 +31,23 @@ input/jpx_all.csv
 ② jpx_scoring_engine.py    … スコアリング（週次）
       │  scored_output.csv
       ▼
-③ jpx_yield_filter.py      … 利回り判定・買いシグナル付与（週次）
+③ jpx_yield_filter.py      … ゲート → ウォッチリスト → 今月の買い時（週次）
       │  yield_filtered_output.csv
       ▼
 ④ makeprompt.py            … NotebookLM 用プロンプト生成（週次）
          prompt_output.txt
 ```
 
-| ステップ | スクリプト | 自動実行 |
-|---|---|---|
-| ① データ取得 | `jpx_screening_fetch.py` | 毎月1日 07:00 UTC（16:00 JST） |
-| ② スコアリング | `jpx_scoring_engine.py` | 毎週月曜 04:10 UTC（13:10 JST） |
-| ③ 利回り判定 | `jpx_yield_filter.py` | 同上（②に続けて実行） |
-| ④ プロンプト生成 | `makeprompt.py` | 同上（③に続けて実行） |
+### 絞り込みの目安（2026年10月時点）
 
-> データ取得は yfinance への負荷が大きいため月次、取得済みデータを使うスコアリング以降は週次に分けています。
-> 週次ジョブでは株価・利回りだけが最新になります。
+```
+全銘柄                              3,747
+  └ 累進フラグあり                    580   ② の結果
+     └ 重大な問題なし                 503   ③ ゲート
+        └ TotalScore 75以上           378   ③ ゲート
+           └ ウォッチリスト             100   ③ 上限100件（上限に達した状態）
+              └ 今月の買い時             10   ③ ☆◎〇から上位10件
+```
 
 ---
 
@@ -92,17 +104,29 @@ python jpx_screening_fetch.py input/topix_core30.csv # 動作確認用（30銘�
 前年 > 0  かつ  当年 ≥ 前年×1.8  かつ  翌年 ≤ 当年×0.7  → 当年を max(前年, 翌年) に補正
 ```
 
-**加点・減点**
+**連続有配年数による加点**
+当年は配当が出揃っていないため、**当年を除いた完了年**で、直近から遡った連続有配年数（streak）を数えます。
+
+| 連続有配 | 加減点 | Problem |
+|---|---|---|
+| 完了年すべて有配（10年） | +20 | — |
+| 5年以上10年未満 | +10 | `有配5年以上10年未満` |
+| 4年 | +5 | `有配4年` |
+| 4年未満 | −40 | `直近4年に無配あり` |
+
+途中で一時的に無配だった銘柄は、無配より前の実績は評価に入れず、無配の後に続く連続有配の期間だけで評価されます。
+5年・4年の枠に入った銘柄は、以降の増配・減配・平均増配率を**有配期間（＋当年）だけ**で計算します（無配期間の 0→0 が「据え置き＝増配」として加点されるのを防ぐため）。
+
+**その他の加点・減点**
 
 | 項目 | 内容 |
 |---|---|
-| 無配なし | 全期間で配当あり：+20 ／ 無配年あり：−40（`無配年あり`） |
 | 増配年数 | 据え置きも増配扱い。1回につき +2（最大 +20）。0回なら `増配なし` |
 | 減配 | 最新年（当年）の比較は除外して判定。1回以上：−1 ／ 2回以上：さらに −(回数×10)（`2回減配あり`）／ 3回以上：`3回以上減配あり` |
-| 配当性向（直近4年） | 配当 ÷ EPS。100%以上：−5（`配当性向100%以上`）／ 70%以上は2回目から −2（`配当性向70%以上2回`） |
+| 配当性向（直近4年） | 配当 ÷ EPS。100%以上：1回ごとに −5（`配当性向100%以上`）／ 70%以上は2回目から −2（`配当性向70%以上2回`） |
 | 平均増配率 | 最新年を除く増配率の平均。3%以下：−1 ／ 1.5%以下：さらに −2 ／ 0%：さらに −17 |
 
-- スコアが 38 点以上なら **「累進」フラグ** を付与し、40 点（満点）に補正します。
+- スコアが 38 点以上なら **「累進」フラグ** を付与し、40 点（満点）に補正します。実質的に、10年間有配が続き、減配がほぼない銘柄です。
 - マイナスは 0 に丸めます。
 - 平均増配率は `AvgGrowthRate` 列、累進フラグは `CumulativeDividend` 列に出力され、③で利用します。
 
@@ -130,31 +154,71 @@ python jpx_screening_fetch.py input/topix_core30.csv # 動作確認用（30銘�
 
 ---
 
-# 🎯 ③ jpx_yield_filter.py — 利回り判定
+# 🎯 ③ jpx_yield_filter.py — ウォッチリストと今月の買い時
 
 ## 概要
-スコアリング結果から候補を絞り込み、現在の配当利回りが「過去2年の水準と比べて割安か」を判定して **買いシグナル** を付与します。
+スコアリング結果から **①ゲート → ②ウォッチリスト → ③今月の買い時** の順に絞り込みます。
 
 ```bash
-python jpx_yield_filter.py <スコア閾値> <増配率閾値>
-python jpx_yield_filter.py 80 0.1     # 週次ジョブでの設定
+python jpx_yield_filter.py [TotalScore下限] [増配率枠の増配率下限] [ウォッチリスト上限] [今月の買い時の件数]
+python jpx_yield_filter.py 75 0.25 100 10     # 既定値（週次ジョブでは 75 0.25 を指定）
 ```
 
-## 候補の絞り込み条件
-次のいずれかを満たす銘柄が対象です。
+| 引数 | 既定値 | 内容 |
+|---|---|---|
+| TotalScore下限 | 75 | ゲートの必須条件 |
+| 増配率枠の増配率下限 | 0.25 | 増配率枠にだけ使う（高利回り枠には求めない） |
+| ウォッチリスト上限 | 100 | 超えた場合は2年平均利回りの高い順に残す |
+| 今月の買い時の件数 | 10 | ☆◎〇の上位から選ぶ件数 |
 
-1. `TotalScore ≥ スコア閾値` かつ `AvgGrowthRate > 0`
-2. `AvgGrowthRate ≥ 増配率閾値` かつ 累進フラグあり
+## ① ゲート（ネット接続不要・すべて必須）
+
+次の3つをすべて満たす銘柄だけが、yfinance への問い合わせ対象になります。
+
+1. **累進フラグあり**（10年間有配を続けている）
+2. **重大な問題なし**：`Problem` 列に次の4つが**1つも含まれない**
+   - `配当性向100%以上` ／ `営業CF合計マイナス` ／ `自己資本比率低い` ／ `EPS低い`
+   - 営業CF・EPS は、データが取得できていない場合も同じタグが付きます。
+   - `現金比率低い` `ROE低い` `減収傾向` `配当性向70%以上2回` は、業種や程度の問題なので除外には使いません。
+3. **TotalScore が下限以上**
+
+## ② ウォッチリスト
+
+ゲートを通った銘柄のうち、**次のどちらかを満たす銘柄**を残します（過去2年の平均利回りで判定）。
+
+```
+高利回り枠 : 2年平均利回り ≥ 規模別の基準
+増配率枠   : 2年平均利回り ≥ 3% かつ 平均増配率 ≥ 増配率下限（既定 25%）
+```
+
+規模別の基準（大型株ほど低い基準にして、小型株への偏りを抑えます）
+
+| 超大型（1兆円〜） | 大型（3,000億円〜） | 中型（1,000億円〜） | 小型（400億円〜） | 超小型 |
+|---|---|---|---|---|
+| 3.0% | 3.5% | 4.0% | 4.5% | 5.0% |
+
+- 時価総額が不明な銘柄は、最も厳しい基準（5.0%）を適用します。
+- **「高利回り枠」や「増配率枠」のどちらで入ったかは `WatchType` 列で確認できます。**
+- 件数が上限を超えたときは、2年平均利回りの高い順に上限まで残します。
+
+## ③ 今月の買い時
+
+ウォッチリストのうち、買いシグナルが ☆ ◎ 〇 の銘柄を、**☆ → ◎ → 〇の順に並べ、同順位なら割安度の高い順**に上位 N 件選び、`MonthlyPick` 列に `Y` を付けます。
+同一セクターの上限はありません（毎月の購入で平準化する前提です）。
 
 ## 取得・算出する指標
 
 | 指標 | 内容 |
 |---|---|
-| DividendYield | 直近1年の配当合計 ÷ 現在株価 |
-| AvgYield2Y / MaxYield2Y | 直近2年（配当のあった直近2暦年）について「配当 ÷ 年間最安値」「配当 ÷ 年間平均株価」を算出し、その平均値・最大値 |
-| SizeCategory | 時価総額で 超大型（1兆円〜）／大型（3,000億円〜）／中型（1,000億円〜）／小型（400億円〜）／超小型 |
+| DividendYield | 直近365日の配当合計 ÷ 現在株価 |
+| AvgYield2Y / MaxYield2Y | **直近12か月ごとの2期間**（直近365日と、その前の365日）について「配当 ÷ 期間の最安値」「配当 ÷ 期間の平均株価」を算出し、その平均値・最大値 |
+| Valuation（割安度） | 現在利回り ÷ 2年平均利回り（1を超えるほど割安） |
+| SizeCategory | 時価総額で 超大型／大型／中型／小型／超小型 |
 | SectorJP | yfinance のセクターを GICS 11分類の日本語に変換（`utils/sector_map.py`） |
 | SplitFlag | 直近1年以内に株式分割があれば `Split` |
+
+> 2年平均を「暦年」ではなく「直近12か月ごと」で計算するのは、当年の配当が出揃う前でも、常に12か月分どうしで比較するためです。
+> 暦年で計算すると、年の途中は当年の配当が少なく、平均利回りが低く出て、買い時が出やすくなってしまいます。
 
 ## 買いシグナル（BuySignal）
 上から順に判定し、最初に該当したものを採用します。
@@ -170,31 +234,82 @@ python jpx_yield_filter.py 80 0.1     # 週次ジョブでの設定
 | × | 上記以外 |
 
 ## 出力
-`yield_filtered_output.csv`（利回りの降順）
+`yield_filtered_output.csv`（ウォッチリスト。今月の買い時が先頭に、☆◎〇の順で並びます）
 
-`Symbol, Company, CurrentPrice, TotalScore, DividendYield, AvgYield2Y, MaxYield2Y, MarketCap, SizeCategory, SectorJP, SplitFlag, BuySignal, Problem, AvgGrowthRate, CumulativeDividend`
-
-> `Problem` 列は参考情報として残しており、問題のある銘柄の除外はここでは行いません。
+`Symbol, Company, CurrentPrice, TotalScore, DividendYield, AvgYield2Y, MaxYield2Y, Valuation, MarketCap, SizeCategory, SectorJP, SplitFlag, BuySignal, WatchType, Problem, AvgGrowthRate, CumulativeDividend, MonthlyPick`
 
 ---
 
 # 📝 ④ makeprompt.py — NotebookLM 用プロンプト生成
 
 ```bash
-python makeprompt.py yield_filtered_output.csv 7   # ☆銘柄からランダムに7銘柄
+python makeprompt.py yield_filtered_output.csv        # MonthlyPick=Y をすべて対象
+python makeprompt.py yield_filtered_output.csv 5      # 件数を指定すると、優先度順の上位5件だけ
 ```
 
-1. `BuySignal = ☆` の銘柄だけを対象にします（1件もなければ何も出力せず終了）。
-2. ランダムに指定数を抽出し、セクター順に並べ替えます。
+1. `MonthlyPick = Y` の銘柄だけを対象にします（Y が1件もない、または `MonthlyPick` 列がない場合は、メッセージを出して終了します）。
+2. セクター順に並べ替えます。
 3. 各銘柄の Yahoo!ファイナンス（財務・プロフィール・配当）の URL 一覧を作成します。
 4. 次の内容を含むプロンプトを `prompt_output.txt` に出力します。
    - 銘柄一覧（セクター・利回り・株価）と参照 URL
    - 除外判断の基準（成長性・減配・低利回り）
    - 銘柄ごとの分析項目（景気敏感、財務健全性、事業の強み・弱み、増配力、累進配当、政策との相性、グローバル展開、10年以上保有の適性、総合評価 A〜C）
-   - 評価別の買い足し上限額（A：2万円、B・C：1万円）に応じた買い足し数量の調整指示
+   - 評価ランク別の買い足し上限額：A 10万円、B 6万円、C 2万円（それぞれ許容値あり）に応じた買い足し数量の調整指示
    - Excel 貼り付け用の「証券コード｜買い足し数量｜日付」表の出力指示
 
 > 買い足し数量の計算には、手元の保有状況ファイル（`portfolio_result_all.csv`）を NotebookLM に別途読み込ませる前提です。このファイルはリポジトリには含まれません。
+
+---
+
+# ⚙️ GitHub Actions
+
+| ワークフロー | 実行タイミング | 内容 |
+|---|---|---|
+| `run-fetch.yml` | 毎月1日 07:00 UTC（16:00 JST） | ① を実行し、`output/output_financial_dividend_merged.csv` をコミット |
+| `weekly_scoring_filter.yml` | 毎週月曜 04:10 UTC（13:10 JST） | ②③④ を実行し、結果を `output/` にコミット |
+
+どちらも手動実行（`workflow_dispatch`）ができます。スケジュール実行は、GitHub 側の混雑で遅れることがあります。
+
+**週次ジョブの流れ（`weekly_scoring_filter.yml`）**
+
+1. `output/output_financial_dividend_merged.csv` をカレントディレクトリにコピー
+2. `python jpx_scoring_engine.py`
+3. `python jpx_yield_filter.py 75 0.25`
+4. `echo "No data." > prompt_output.txt` のあとに `python makeprompt.py yield_filtered_output.csv`（今月の買い時が0件の週は `No data.` のまま残ります）
+5. 次の3ファイルを `output/` に移してコミット・プッシュ
+
+| コミットされるファイル | 内容 |
+|---|---|
+| `output/weekly_scored_output.csv` | 全銘柄のスコア |
+| `output/weekly_filtered_output.csv` | ウォッチリスト（`MonthlyPick` 列で今月の買い時を確認） |
+| `output/weekly_prompt_output.txt` | NotebookLM 用プロンプト |
+
+> データ取得は yfinance への負荷が大きいため月次、取得済みデータを使うスコアリング以降は週次に分けています。週次ジョブで最新になるのは、株価と利回りです。
+
+---
+
+# 🔧 調整できる設定
+
+| 設定 | 場所 | 既定値 |
+|---|---|---|
+| ゲートの TotalScore 下限 | 週次ジョブの引数（1つ目） | 75 |
+| 増配率枠の増配率下限 | 週次ジョブの引数（2つ目） | 0.25 |
+| ウォッチリストの上限 | `jpx_yield_filter.py` の引数（3つ目） | 100 |
+| 今月の買い時の件数 | `jpx_yield_filter.py` の引数（4つ目） | 10 |
+| 規模別の利回り基準 | `jpx_yield_filter.py` の `YIELD_REQ_BY_SIZE` | 3.0〜5.0% |
+| 増配率枠の最低2年平均利回り | `jpx_yield_filter.py` の `GROWTH_BRANCH_MIN_YIELD` | 3% |
+| ゲートで除外する問題 | `jpx_yield_filter.py` の `CRITICAL_PROBLEMS` | 4種類 |
+| 買い時として扱うシグナル | `jpx_yield_filter.py` の `BUY_TIERS` | ☆ ◎ 〇 |
+
+---
+
+# ⚠️ 既知の注意点
+
+- **データ取得に失敗した銘柄は、ウォッチリストに入りません。** yfinance の取得に失敗（アクセス制限など）すると、その銘柄は黙って対象から外れ、週ごとに件数や顔ぶれがぶれることがあります。
+- **ウォッチリストが0件になると、その週の出力はコミットされません。** `yield_filtered_output.csv` が空になり、`makeprompt.py` が読み込めずにエラー終了するためです。
+- **特別配当の補正は、スコアリング（②）だけです。** ③ の利回り計算は補正していないので、記念配当があった年は2年平均利回りが高めに出ます。
+- 財務データ・ROE・EPS・時価総額は、月次の取得時点の値です。決算発表の直後は、実際より古い値を使うことがあります。
+- 配当の支払い日が少しずれると、直近12か月の期間に入る支払い回数が増減し、利回りがぶれることがあります。
 
 ---
 
@@ -204,7 +319,7 @@ python makeprompt.py yield_filtered_output.csv 7   # ☆銘柄からランダム
 .
 ├── jpx_screening_fetch.py        # ① データ取得
 ├── jpx_scoring_engine.py         # ② スコアリング
-├── jpx_yield_filter.py           # ③ 利回り判定
+├── jpx_yield_filter.py           # ③ ウォッチリスト・今月の買い時
 ├── makeprompt.py                 # ④ プロンプト生成
 ├── utils/sector_map.py           # セクター日本語化
 ├── input/
@@ -235,26 +350,16 @@ python jpx_screening_fetch.py input/topix_core30.csv
 # ② スコアリング（カレントディレクトリの output_financial_dividend_merged.csv を読み込む）
 python jpx_scoring_engine.py
 
-# ③ 利回り判定
-python jpx_yield_filter.py 80 0.1
+# ③ ウォッチリスト・今月の買い時
+python jpx_yield_filter.py 75 0.25
 
 # ④ プロンプト生成
-python makeprompt.py yield_filtered_output.csv 7
+python makeprompt.py yield_filtered_output.csv
 ```
 
 各スクリプトは**カレントディレクトリ**のファイルを読み書きします。
 GitHub Actions 上では、実行後に `output/` 配下へ移動してコミットしています。
-
----
-
-# 📄 出力ファイル一覧
-
-| ファイル | 生成元 | 内容 |
-|---|---|---|
-| `output/output_financial_dividend_merged.csv` | ① | 10年分の配当＋財務データ |
-| `output/weekly_scored_output.csv` | ② | 全銘柄のスコアと Problem |
-| `output/weekly_filtered_output.csv` | ③ | 候補銘柄の利回り・買いシグナル |
-| `output/weekly_prompt_output.txt` | ④ | NotebookLM 用プロンプト |
+ローカルで生成される `prompt_output.txt` などは、リポジトリにコミットしないようにしてください。
 
 ---
 
