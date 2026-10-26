@@ -3,49 +3,49 @@
 （抽出条件：MonthlyPick=Y、10銘柄）
 
 対象銘柄一覧（セクター順）：
-1911.T（一般消費財・サービス / 利回り: 4.37% / 株価: 1211.5円）
-6902.T（一般消費財・サービス / 利回り: 3.85% / 株価: 1869.5円）
-3925.T（情報技術 / 利回り: 5.18% / 株価: 1352.0円）
-3921.T（情報技術 / 利回り: 3.60% / 株価: 1613.0円）
-417A.T（生活必需品 / 利回り: 6.10% / 株価: 1859.5円）
-6294.T（資本財・サービス / 利回り: 5.97% / 株価: 1892.0円）
-6368.T（資本財・サービス / 利回り: 5.25% / 株価: 2494.5円）
-6088.T（資本財・サービス / 利回り: 4.15% / 株価: 627.0円）
-6307.T（資本財・サービス / 利回り: 6.67% / 株価: 450.0円）
-5929.T（資本財・サービス / 利回り: 3.88% / 株価: 3637.0円）
+6902.T（一般消費財・サービス / 利回り: 3.88% / 株価: 1854.5円）
+2479.T（情報技術 / 利回り: 5.49% / 株価: 237.0円）
+3921.T（情報技術 / 利回り: 3.69% / 株価: 1573.0円）
+3925.T（情報技術 / 利回り: 5.20% / 株価: 1346.0円）
+417A.T（生活必需品 / 利回り: 5.94% / 株価: 1912.0円）
+7508.T（生活必需品 / 利回り: 6.20% / 株価: 1370.0円）
+6368.T（資本財・サービス / 利回り: 5.90% / 株価: 2219.0円）
+6294.T（資本財・サービス / 利回り: 5.98% / 株価: 1891.0円）
+6307.T（資本財・サービス / 利回り: 6.55% / 株価: 458.0円）
+5929.T（資本財・サービス / 利回り: 3.90% / 株価: 3613.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/1911.T/financials
-https://finance.yahoo.co.jp/quote/1911.T/profile
-https://finance.yahoo.co.jp/quote/1911.T/dividend
-
 https://finance.yahoo.co.jp/quote/6902.T/financials
 https://finance.yahoo.co.jp/quote/6902.T/profile
 https://finance.yahoo.co.jp/quote/6902.T/dividend
 
-https://finance.yahoo.co.jp/quote/3925.T/financials
-https://finance.yahoo.co.jp/quote/3925.T/profile
-https://finance.yahoo.co.jp/quote/3925.T/dividend
+https://finance.yahoo.co.jp/quote/2479.T/financials
+https://finance.yahoo.co.jp/quote/2479.T/profile
+https://finance.yahoo.co.jp/quote/2479.T/dividend
 
 https://finance.yahoo.co.jp/quote/3921.T/financials
 https://finance.yahoo.co.jp/quote/3921.T/profile
 https://finance.yahoo.co.jp/quote/3921.T/dividend
 
+https://finance.yahoo.co.jp/quote/3925.T/financials
+https://finance.yahoo.co.jp/quote/3925.T/profile
+https://finance.yahoo.co.jp/quote/3925.T/dividend
+
 https://finance.yahoo.co.jp/quote/417A.T/financials
 https://finance.yahoo.co.jp/quote/417A.T/profile
 https://finance.yahoo.co.jp/quote/417A.T/dividend
 
-https://finance.yahoo.co.jp/quote/6294.T/financials
-https://finance.yahoo.co.jp/quote/6294.T/profile
-https://finance.yahoo.co.jp/quote/6294.T/dividend
+https://finance.yahoo.co.jp/quote/7508.T/financials
+https://finance.yahoo.co.jp/quote/7508.T/profile
+https://finance.yahoo.co.jp/quote/7508.T/dividend
 
 https://finance.yahoo.co.jp/quote/6368.T/financials
 https://finance.yahoo.co.jp/quote/6368.T/profile
 https://finance.yahoo.co.jp/quote/6368.T/dividend
 
-https://finance.yahoo.co.jp/quote/6088.T/financials
-https://finance.yahoo.co.jp/quote/6088.T/profile
-https://finance.yahoo.co.jp/quote/6088.T/dividend
+https://finance.yahoo.co.jp/quote/6294.T/financials
+https://finance.yahoo.co.jp/quote/6294.T/profile
+https://finance.yahoo.co.jp/quote/6294.T/dividend
 
 https://finance.yahoo.co.jp/quote/6307.T/financials
 https://finance.yahoo.co.jp/quote/6307.T/profile
