@@ -3,29 +3,25 @@
 （抽出条件：MonthlyPick=Y、10銘柄）
 
 対象銘柄一覧（セクター順）：
-6902.T（一般消費財・サービス / 利回り: 3.88% / 株価: 1854.5円）
-2479.T（情報技術 / 利回り: 5.49% / 株価: 237.0円）
-3921.T（情報技術 / 利回り: 3.69% / 株価: 1573.0円）
-3925.T（情報技術 / 利回り: 5.20% / 株価: 1346.0円）
-417A.T（生活必需品 / 利回り: 5.94% / 株価: 1912.0円）
-7508.T（生活必需品 / 利回り: 6.20% / 株価: 1370.0円）
-6368.T（資本財・サービス / 利回り: 5.90% / 株価: 2219.0円）
-6294.T（資本財・サービス / 利回り: 5.98% / 株価: 1891.0円）
-6307.T（資本財・サービス / 利回り: 6.55% / 株価: 458.0円）
-5929.T（資本財・サービス / 利回り: 3.90% / 株価: 3613.0円）
+1911.T（一般消費財・サービス / 利回り: 4.23% / 株価: 1252.0円）
+2479.T（情報技術 / 利回り: 5.96% / 株価: 218.0円）
+3925.T（情報技術 / 利回り: 5.47% / 株価: 1279.0円）
+417A.T（生活必需品 / 利回り: 5.96% / 株価: 1904.5円）
+7508.T（生活必需品 / 利回り: 5.94% / 株価: 1431.0円）
+6200.T（生活必需品 / 利回り: 5.15% / 株価: 679.0円）
+6294.T（資本財・サービス / 利回り: 6.11% / 株価: 1848.0円）
+6088.T（資本財・サービス / 利回り: 4.21% / 株価: 617.0円）
+6307.T（資本財・サービス / 利回り: 6.38% / 株価: 470.0円）
+1926.T（資本財・サービス / 利回り: 7.11% / 株価: 932.0円）
 
 参照する URL 一覧：
-https://finance.yahoo.co.jp/quote/6902.T/financials
-https://finance.yahoo.co.jp/quote/6902.T/profile
-https://finance.yahoo.co.jp/quote/6902.T/dividend
+https://finance.yahoo.co.jp/quote/1911.T/financials
+https://finance.yahoo.co.jp/quote/1911.T/profile
+https://finance.yahoo.co.jp/quote/1911.T/dividend
 
 https://finance.yahoo.co.jp/quote/2479.T/financials
 https://finance.yahoo.co.jp/quote/2479.T/profile
 https://finance.yahoo.co.jp/quote/2479.T/dividend
-
-https://finance.yahoo.co.jp/quote/3921.T/financials
-https://finance.yahoo.co.jp/quote/3921.T/profile
-https://finance.yahoo.co.jp/quote/3921.T/dividend
 
 https://finance.yahoo.co.jp/quote/3925.T/financials
 https://finance.yahoo.co.jp/quote/3925.T/profile
@@ -39,21 +35,25 @@ https://finance.yahoo.co.jp/quote/7508.T/financials
 https://finance.yahoo.co.jp/quote/7508.T/profile
 https://finance.yahoo.co.jp/quote/7508.T/dividend
 
-https://finance.yahoo.co.jp/quote/6368.T/financials
-https://finance.yahoo.co.jp/quote/6368.T/profile
-https://finance.yahoo.co.jp/quote/6368.T/dividend
+https://finance.yahoo.co.jp/quote/6200.T/financials
+https://finance.yahoo.co.jp/quote/6200.T/profile
+https://finance.yahoo.co.jp/quote/6200.T/dividend
 
 https://finance.yahoo.co.jp/quote/6294.T/financials
 https://finance.yahoo.co.jp/quote/6294.T/profile
 https://finance.yahoo.co.jp/quote/6294.T/dividend
 
+https://finance.yahoo.co.jp/quote/6088.T/financials
+https://finance.yahoo.co.jp/quote/6088.T/profile
+https://finance.yahoo.co.jp/quote/6088.T/dividend
+
 https://finance.yahoo.co.jp/quote/6307.T/financials
 https://finance.yahoo.co.jp/quote/6307.T/profile
 https://finance.yahoo.co.jp/quote/6307.T/dividend
 
-https://finance.yahoo.co.jp/quote/5929.T/financials
-https://finance.yahoo.co.jp/quote/5929.T/profile
-https://finance.yahoo.co.jp/quote/5929.T/dividend
+https://finance.yahoo.co.jp/quote/1926.T/financials
+https://finance.yahoo.co.jp/quote/1926.T/profile
+https://finance.yahoo.co.jp/quote/1926.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
@@ -97,6 +97,7 @@ portfolio_result_all.csv の現在所有の評価額（＝現在株価 × 現在
 ● 評価C：買い足し後の評価額が 20,000円以内（21,000円までは許容）
 ※買い足し数量（株数）は、上記の「追加購入10,000円（最大11,000円）」と「買い足し後評価額の上限（許容値含む）」のどちらも超えない最大の整数（小数点切り捨て）としてください。
 ※売却は不要のため、現在評価額がすでに上限を超えている場合は買い足し数量を0とし、マイナス調整は行わない
+※特別枠は評価に関わらず上限20,000円以内（21,000円までは許容）とする
 
 【STEP4：出力形式（枠ごとに別々の表で出力）】
 以下を「高配当枠」「特別枠」それぞれ別の見出し・別の表で出力してください。2つの枠の銘柄を同じ表に混ぜないでください。
