@@ -3,8 +3,12 @@ name: Weekly Scoring and Filtering
 on:
   workflow_dispatch:
   schedule:
-    - cron: "10 4 * * 1"   # 毎週月曜 15:10 JST（UTC 06:10）ただなぜか19時ころ動いてしまうため2h前倒し
+    - cron: "35 6 * * 1"   # 毎週月曜 15:35 JST（UTC 06:35）ただなぜか19時ころ動いてしまうため2h前倒し
 
+concurrency:
+  group: yieldanalytics-pipeline
+  cancel-in-progress: false
+  
 jobs:
   scoring_filter:
     runs-on: ubuntu-latest
