@@ -1,18 +1,11 @@
 
 以下の銘柄について、URL 一覧を NotebookLM に貼り付けて解析してください。
-（抽出条件：MonthlyPick=Y、10銘柄）
+（抽出条件：MonthlyPick=Y、3銘柄）
 
 対象銘柄一覧（セクター順）：
-1911.T（一般消費財・サービス / 利回り: 4.85% / 株価: 1092.5円）
-2479.T（情報技術 / 利回り: 6.05% / 株価: 215.0円）
-3925.T（情報技術 / 利回り: 5.75% / 株価: 1217.0円）
-9360.T（情報技術 / 利回り: 4.41% / 株価: 2495.0円）
-417A.T（生活必需品 / 利回り: 5.74% / 株価: 1976.0円）
-6200.T（生活必需品 / 利回り: 5.50% / 株価: 636.0円）
-7508.T（生活必需品 / 利回り: 5.95% / 株価: 1429.0円）
-6294.T（資本財・サービス / 利回り: 6.39% / 株価: 1769.0円）
-6307.T（資本財・サービス / 利回り: 7.96% / 株価: 377.0円）
-6088.T（資本財・サービス / 利回り: 4.18% / 株価: 622.0円）
+1911.T（一般消費財・サービス / 利回り: 4.67% / 株価: 1134.0円）
+2479.T（情報技術 / 利回り: 6.10% / 株価: 213.0円）
+3925.T（情報技術 / 利回り: 5.65% / 株価: 1240.0円）
 
 参照する URL 一覧：
 https://finance.yahoo.co.jp/quote/1911.T/financials
@@ -26,34 +19,6 @@ https://finance.yahoo.co.jp/quote/2479.T/dividend
 https://finance.yahoo.co.jp/quote/3925.T/financials
 https://finance.yahoo.co.jp/quote/3925.T/profile
 https://finance.yahoo.co.jp/quote/3925.T/dividend
-
-https://finance.yahoo.co.jp/quote/9360.T/financials
-https://finance.yahoo.co.jp/quote/9360.T/profile
-https://finance.yahoo.co.jp/quote/9360.T/dividend
-
-https://finance.yahoo.co.jp/quote/417A.T/financials
-https://finance.yahoo.co.jp/quote/417A.T/profile
-https://finance.yahoo.co.jp/quote/417A.T/dividend
-
-https://finance.yahoo.co.jp/quote/6200.T/financials
-https://finance.yahoo.co.jp/quote/6200.T/profile
-https://finance.yahoo.co.jp/quote/6200.T/dividend
-
-https://finance.yahoo.co.jp/quote/7508.T/financials
-https://finance.yahoo.co.jp/quote/7508.T/profile
-https://finance.yahoo.co.jp/quote/7508.T/dividend
-
-https://finance.yahoo.co.jp/quote/6294.T/financials
-https://finance.yahoo.co.jp/quote/6294.T/profile
-https://finance.yahoo.co.jp/quote/6294.T/dividend
-
-https://finance.yahoo.co.jp/quote/6307.T/financials
-https://finance.yahoo.co.jp/quote/6307.T/profile
-https://finance.yahoo.co.jp/quote/6307.T/dividend
-
-https://finance.yahoo.co.jp/quote/6088.T/financials
-https://finance.yahoo.co.jp/quote/6088.T/profile
-https://finance.yahoo.co.jp/quote/6088.T/dividend
 
 
 NotebookLM に問い合わせるプロンプト：
