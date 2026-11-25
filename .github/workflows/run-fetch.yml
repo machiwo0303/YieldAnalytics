@@ -3,8 +3,12 @@ name: Run JPX Screening Fetch
 on:
   workflow_dispatch:  
   schedule:
-    - cron: "0 7 1 * *"   # 毎月1日 15:00 UTC（JST 24:00）
+    - cron: "10 21 * * 5"   # 毎週土曜 06:10 JST（金曜 21:10 UTC）
 
+concurrency:
+  group: yieldanalytics-pipeline
+  cancel-in-progress: false
+  
 jobs:
   run-fetch:
     runs-on: ubuntu-latest
@@ -32,5 +36,5 @@ jobs:
           git config user.email "github-actions@github.com"
           mv output_financial_dividend_merged.csv output/output_financial_dividend_merged.csv
           git add output/output_financial_dividend_merged.csv
-          git commit -m "Update fetch output (auto)"
+          git commit -m "Update fetch output (auto)" || echo "No changes"
           git push
