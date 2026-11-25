@@ -25,7 +25,7 @@ YieldAnalytics は、JPX 全上場銘柄（約3,700銘柄）から **「累進�
 input/jpx_all.csv
       │
       ▼
-① jpx_screening_fetch.py   … 配当・財務データ取得（月次）
+① jpx_screening_fetch.py   … 配当・財務データ取得（週次・土曜朝）
       │  output/output_financial_dividend_merged.csv
       ▼
 ② jpx_scoring_engine.py    … スコアリング（週次）
@@ -265,10 +265,12 @@ python makeprompt.py yield_filtered_output.csv 5      # 件数を指定すると
 
 | ワークフロー | 実行タイミング | 内容 |
 |---|---|---|
-| `run-fetch.yml` | 毎月1日 07:00 UTC（16:00 JST） | ① を実行し、`output/output_financial_dividend_merged.csv` をコミット |
-| `weekly_scoring_filter.yml` | 毎週月曜 04:10 UTC（13:10 JST） | ②③④ を実行し、結果を `output/` にコミット |
+| `run-fetch.yml` | 毎週金曜 21:10 UTC（土曜 06:10 JST） | ① を実行し、`output/output_financial_dividend_merged.csv` をコミット |
+| `weekly_scoring_filter.yml` | 毎週月曜 06:35 UTC（15:35 JST） | ②③④ を実行し、結果を `output/` にコミット |
 
-どちらも手動実行（`workflow_dispatch`）ができます。スケジュール実行は、GitHub 側の混雑で遅れることがあります。
+どちらも手動実行（`workflow_dispatch`）ができます。スケジュール実行は、GitHub 側の混雑で遅れることがあります。月曜の終値を確実に使いたいときは、大引け（15:30）の後に `weekly_scoring_filter.yml` を手動実行してください。
+
+2つのワークフローは同じ実行グループ（`concurrency`）に入れてあり、同時には動きません。先に動いているほうが終わるまで、あとから来たほうは待ちます。
 
 **週次ジョブの流れ（`weekly_scoring_filter.yml`）**
 
@@ -284,7 +286,7 @@ python makeprompt.py yield_filtered_output.csv 5      # 件数を指定すると
 | `output/weekly_filtered_output.csv` | ウォッチリスト（`MonthlyPick` 列で今月の買い時を確認） |
 | `output/weekly_prompt_output.txt` | NotebookLM 用プロンプト |
 
-> データ取得は yfinance への負荷が大きいため月次、取得済みデータを使うスコアリング以降は週次に分けています。週次ジョブで最新になるのは、株価と利回りです。
+> データ取得は yfinance への負荷が大きく（約1時間）、財務や配当はそれほど頻繁に変わらないため、週1回（土曜朝）に分けています。スコアリング以降は取得済みデータを使い、約10分で終わります。株価と利回りは、スコアリングを動かした時点の値になります。月曜の大引け（15:30）より前に動くと、終値ではなくその時点の株価が使われます。
 
 ---
 
@@ -308,7 +310,7 @@ python makeprompt.py yield_filtered_output.csv 5      # 件数を指定すると
 - **データ取得に失敗した銘柄は、ウォッチリストに入りません。** yfinance の取得に失敗（アクセス制限など）すると、その銘柄は黙って対象から外れ、週ごとに件数や顔ぶれがぶれることがあります。
 - **ウォッチリストが0件になると、その週の出力はコミットされません。** `yield_filtered_output.csv` が空になり、`makeprompt.py` が読み込めずにエラー終了するためです。
 - **特別配当の補正は、スコアリング（②）だけです。** ③ の利回り計算は補正していないので、記念配当があった年は2年平均利回りが高めに出ます。
-- 財務データ・ROE・EPS・時価総額は、月次の取得時点の値です。決算発表の直後は、実際より古い値を使うことがあります。
+- 財務データ・ROE・EPS・時価総額は、直近の取得（毎週土曜朝）時点の値です。決算発表の直後は、実際より古い値を使うことがあります。
 - 配当の支払い日が少しずれると、直近12か月の期間に入る支払い回数が増減し、利回りがぶれることがあります。
 
 ---
@@ -326,12 +328,12 @@ python makeprompt.py yield_filtered_output.csv 5      # 件数を指定すると
 │   ├── jpx_all.csv               # JPX 全銘柄コード
 │   └── topix_core30.csv          # テスト用（TOPIX Core30）
 ├── output/
-│   ├── output_financial_dividend_merged.csv   # ① の出力（月次更新）
+│   ├── output_financial_dividend_merged.csv   # ① の出力（週次更新）
 │   ├── weekly_scored_output.csv               # ② の出力（週次更新）
 │   ├── weekly_filtered_output.csv             # ③ の出力（週次更新）
 │   └── weekly_prompt_output.txt               # ④ の出力（週次更新）
 ├── .github/workflows/
-│   ├── run-fetch.yml                  # 月次：データ取得
+│   ├── run-fetch.yml                  # 週次（土曜）：データ取得
 │   └── weekly_scoring_filter.yml      # 週次：スコアリング〜プロンプト生成
 ├── old/                          # 初期の仕様メモ・試作
 └── requirements.txt
